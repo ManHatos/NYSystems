@@ -1,2 +1,0 @@
-# ny-systems
-d
