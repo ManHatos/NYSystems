@@ -3,5 +3,5 @@ node_modules/
 
 # local development
 .env
-compiled/
+dist/
 .vscode

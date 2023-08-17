@@ -2,8 +2,7 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "NodeNext",
-		"outDir": "compiled/",
-    "sourceMap": true,
+		"outDir": "dist/",
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
