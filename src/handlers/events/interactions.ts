@@ -1,3 +1,3 @@
-import { events } from "./events.js";
+import { events } from "./index.js";
 
 events.interactionCreate = (interaction) => {};
