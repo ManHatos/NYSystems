@@ -1,3 +1,7 @@
 import { EventHandlers } from "@discordeno/bot";
 
-export const events: Partial<EventHandlers> = {};
+import { example } from "./example.js";
+
+export const events: Partial<EventHandlers> = {
+	...example,
+};
