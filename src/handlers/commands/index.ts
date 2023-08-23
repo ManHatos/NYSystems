@@ -1,5 +1,7 @@
 import { CreateApplicationCommand } from "@discordeno/bot";
 
-import { example } from "./example.js";
+import * as moderation from "./moderation.js";
 
-export const commands: Array<CreateApplicationCommand> = [example];
+export const commands: Array<CreateApplicationCommand> = [moderation].flatMap((command) =>
+	Object.values(command)
+);
