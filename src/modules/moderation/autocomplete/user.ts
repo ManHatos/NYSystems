@@ -11,4 +11,5 @@ export default {
 		description: "The user's Roblox username or identifier (ID)",
 		required: true,
 	},
+	async execute(interaction) {},
 } as ModuleAutocompleteElement;

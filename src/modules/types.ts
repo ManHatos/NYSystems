@@ -38,7 +38,7 @@ export type MainModuleManagerSharedFunctions<K extends keyof ModuleElementTypes>
 	/** a function that retreives a module element based on its identifier from `this.data` */
 	get: (id: string) => ModuleElementTypes[K] | undefined;
 	/** a function that returns a boolean indicating whether or not this element identifier was found in `this.data` */
-	has: (id: string) => boolean;
+	has: (id: string | undefined | null) => boolean;
 }>;
 
 export type ModuleElementTypes = {

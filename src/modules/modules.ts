@@ -12,6 +12,7 @@ function moduleTypeFunctions<K extends keyof ModuleElementTypes>(
 			return this.data.filter((element) => element.id == id)[0] ?? undefined;
 		},
 		has(id) {
+			if (!id) return false;
 			return this.data.find((element) => element.id == id) ? true : false;
 		},
 		data: [],
