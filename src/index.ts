@@ -1,9 +1,8 @@
 import "dotenv/config";
-
 import { GATEWAY as gateway } from "./services/gateway.js";
 import { REST as rest } from "./services/rest.js";
-import { prisma } from "./services/datastore.js";
-
+import { datastore } from "./services/datastore.js";
+import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
 import { modules } from "./modules/modules.js";
 import {
@@ -48,15 +47,19 @@ for (const key in BOT.transformers.desiredProperties.interaction) {
 	] = true;
 }
 
-// initiate database connection and re-export
+// initiate datastore service
 (async () => {
 	const L1 = performance.now();
-	log.info("Connecting to Datastore...");
-	await prisma
-		.$connect()
-		.then(() => log.info(`Datastore ready, took ${(performance.now() - L1).toFixed(5)} ms`));
+	await datastore.$connect();
+	log.info(`Datastore took ${(performance.now() - L1).toFixed(5)} ms`);
 })();
-export { prisma as datastore };
+
+// initiate cachestore service
+(async () => {
+	const L1 = performance.now();
+	await cachestore.connect();
+	log.info(`Cachestore took ${(performance.now() - L1).toFixed(5)} ms`);
+})();
 
 // load application commands
 (async () => {
