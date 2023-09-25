@@ -2,10 +2,16 @@ import "dotenv/config";
 
 import { GATEWAY as gateway } from "./services/gateway.js";
 import { REST as rest } from "./services/rest.js";
+import { prisma } from "./services/datastore.js";
 
 import { log } from "./helpers/logger.js";
 import { modules } from "./modules/modules.js";
-import { ApplicationCommandTypes, InteractionTypes, createBot } from "@discordeno/bot";
+import {
+	ApplicationCommandTypes,
+	InteractionTypes,
+	createBot,
+	logger as DiscordenoLogger,
+} from "@discordeno/bot";
 
 /** main bot object, handles all incoming and outgoing requests to and from Discord */
 export const BOT = createBot({
@@ -32,26 +38,40 @@ export const BOT = createBot({
 	rest,
 });
 
-// setting desired interaction properties
+// disable default logger
+DiscordenoLogger.setLevel(100 as number);
+
+// set desired interaction properties
 for (const key in BOT.transformers.desiredProperties.interaction) {
 	BOT.transformers.desiredProperties.interaction[
 		key as keyof typeof BOT.transformers.desiredProperties.interaction
 	] = true;
 }
 
-// start the gateway connection
-await BOT.start();
+// initiate database connection and re-export
+(async () => {
+	const L1 = performance.now();
+	log.info("Connecting to Datastore...");
+	await prisma
+		.$connect()
+		.then(() => log.info(`Datastore ready, took ${(performance.now() - L1).toFixed(5)} ms`));
+})();
+export { prisma as datastore };
 
-// PUT application commands
-// await BOT.rest
-// 	.upsertGuildApplicationCommands(
-// 		process.env.GUILD_ID as string,
-// 		modules.commands.data.map((element) => element.data)
-// 	)
-// 	.then((response) => log.info("Successfully loaded commands\n" + response))
-// 	.catch((error) => log.error("Error loading commands\n" + JSON.stringify(error)));
+// load application commands
+(async () => {
+	log.info("Loading application commands...");
+	await BOT.rest
+		.upsertGuildApplicationCommands(
+			process.env.GUILD_ID as string,
+			modules.commands.data.map((element) => element.data)
+		)
+		.then((response) => log.info("Successfully loaded commands\n" + response))
+		.catch((error) => log.error("Error loading commands\n" + JSON.stringify(error)));
+})();
+
+// initiate gateway connection
+await BOT.start();
 
 process.on("uncaughtException", (e) => console.log("unhandled exception", e));
 process.on("unhandledRejection", (e) => console.log("unhandled rejection", e));
-
-// process.exit();
