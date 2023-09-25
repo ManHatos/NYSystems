@@ -9,7 +9,5 @@ export default {
 		description: "View a Roblox user's moderation history",
 		options: [autocomplete.data],
 	},
-	async execute(interaction) {
-		interaction.respond("hello there");
-	},
+	async execute(interaction) {},
 } as ModuleCommandElement;
