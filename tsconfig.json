@@ -12,6 +12,7 @@
 		"noEmitOnError": true,
 		"noUncheckedIndexedAccess": true,
 		"noUnusedLocals": true,
-		"noImplicitAny": true
+		"noImplicitAny": true,
+		"noImplicitThis": true
 	}
 }
