@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionTypes } from "@discordeno/bot";
-import { ModuleAutocompleteElement, ModuleAutocompleteIdentifiers } from "../../types.js";
+import { ModuleAutocompleteElement, ModuleAutocompleteIdentifiers } from "../../modules.js";
 
 export const id = ModuleAutocompleteIdentifiers.MODERATION_USER;
 export default {

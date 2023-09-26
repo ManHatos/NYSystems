@@ -1,4 +1,4 @@
-import { ModuleManager } from "../types.js";
+import { ModuleManager } from "../modules.js";
 
 // importing and exporting all autocomplete files
 import autocomplete1 from "./autocomplete/user.js";
