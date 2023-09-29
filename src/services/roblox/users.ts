@@ -79,6 +79,7 @@ export default {
 		});
 	},
 	avatars: {
+		/** return full avatars of multiple users using their identifiers */
 		full: async function (
 			query: number[],
 			size:
@@ -121,6 +122,8 @@ export default {
 					.catch(() => reject("request failed"));
 			});
 		},
+
+		/** return avatar busts (from chest and above) of multiple users using their identifiers */
 		bust: async function (
 			query: number[],
 			size:
@@ -159,6 +162,8 @@ export default {
 					.catch(() => reject("request failed"));
 			});
 		},
+
+		/** return avatar headshots of multiple users using their identifiers */
 		headshot: async function (
 			query: number[],
 			size:
