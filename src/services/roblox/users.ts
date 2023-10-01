@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 /** contact the users.roblox.com APIs */
-export default {
+export const users = {
 	/** return detailed information about a roblox user using their unique identifier or username (more requests) */
 	single: async function (query: string | number): Promise<UsersSingle> {
 		return new Promise(async (resolve, reject) => {
@@ -68,9 +68,8 @@ export default {
 				})
 					.then(async (response) => {
 						const body = await response.json();
-						if (response.ok) {
-							resolve(body?.data);
-						} else if (response.status == 400 && body?.errors[0]?.code == 1)
+						if (response.ok) resolve(body?.data);
+						else if (response.status == 400 && body?.errors[0]?.code == 1)
 							reject("too many identifiers provided");
 						else reject("unknown request error");
 					})
@@ -78,6 +77,34 @@ export default {
 			}
 		});
 	},
+
+	/** search for a roblox user using their username, currently no support for pagination */
+	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 25): Promise<UsersSearch[]> {
+		return new Promise((resolve, reject) => {
+			if (query.length < 3) reject("query is too short");
+			fetch(
+				process.env.ROBLOX_USER_BASE +
+					"/users/search?" +
+					new URLSearchParams({
+						keyword: encodeURI(query),
+						limit: String(limit),
+					}),
+				{
+					method: "GET",
+				}
+			)
+				.then(async (response) => {
+					const body = await response.json();
+					console.dir(body)
+					if (response.ok) resolve(body?.data);
+					else if (response.status == 400 && body?.errors[0]?.code == 2)
+						reject("query was filtered");
+					else reject("unknown request error");
+				})
+				.catch(() => reject("request failed"));
+		});
+	},
+
 	avatars: {
 		/** return full avatars of multiple users using their identifiers */
 		full: async function (
@@ -232,4 +259,12 @@ export type UsersAvatar = {
 	targetId: number;
 	state: "Error" | "Completed" | "InReview" | "Pending" | "Blocked" | "TemporarilyUnavailable";
 	imageUrl: string;
+};
+
+export type UsersSearch = {
+	previousUsernames: string[];
+	hasVerifiedBadge: boolean;
+	id: number;
+	name: string;
+	displayName: string;
 };
