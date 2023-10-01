@@ -7,14 +7,14 @@ export const users = {
 		return new Promise(async (resolve, reject) => {
 			let id = query;
 			if (typeof query == "string") {
-				if (query.length < 3) reject("username is too short");
-				if (!query.match(/^(?=^[^_\n]+_?[^_\n]+$)\w{3,}$/gm)) reject("invalid username");
+				if (query.length < 3) return reject("username is too short");
+				if (!query.match(/^(?=^[^_\n]+_?[^_\n]+$)\w{3,}$/gm)) return reject("invalid username");
 
 				try {
 					const userData = await this.multiple([query]);
 					id = userData[0]!.id;
 				} catch (error) {
-					reject("retrieving username data failed");
+					return reject("retrieving username data failed");
 				}
 			}
 			fetch(process.env.ROBLOX_USER_BASE + "/users/" + id, {
@@ -40,7 +40,7 @@ export const users = {
 		banned: boolean = false
 	): Promise<UsersMulti[]> {
 		return new Promise(async (resolve, reject) => {
-			if (query.length == 0) reject("no query provided");
+			if (query.length == 0) return reject("no query provided");
 			if (query.every((item) => typeof item == "string")) {
 				fetch(process.env.ROBLOX_USER_BASE + "/usernames/users", {
 					method: "POST",
@@ -81,7 +81,7 @@ export const users = {
 	/** search for a roblox user using their username, currently no support for pagination */
 	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 25): Promise<UsersSearch[]> {
 		return new Promise((resolve, reject) => {
-			if (query.length < 3) reject("query is too short");
+			if (query.length < 3) return reject("query is too short");
 			fetch(
 				process.env.ROBLOX_USER_BASE +
 					"/users/search?" +
