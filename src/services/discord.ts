@@ -1,7 +1,10 @@
 import "dotenv/config";
-import { createGatewayManager } from "@discordeno/bot";
-import { REST } from "./rest.js";
+import { createGatewayManager, createRestManager } from "@discordeno/bot";
 import { log } from "../helpers/logger.js";
+
+export const REST = createRestManager({
+	token: process.env.TOKEN as string,
+});
 
 export const GATEWAY = createGatewayManager({
 	token: process.env.TOKEN as string,

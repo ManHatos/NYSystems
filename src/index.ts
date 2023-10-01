@@ -1,6 +1,5 @@
 import "dotenv/config";
-import { GATEWAY as gateway } from "./services/gateway.js";
-import { REST as rest } from "./services/rest.js";
+import { GATEWAY as gateway, REST as rest } from "./services/discord.js";
 import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
