@@ -8,3 +8,24 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+model Records {
+  id        String        @id @map("_id")
+  author    RecordAuthor
+  user      RecordUser
+  input     RecordInput
+  date      DateTime      @default(now())
+}
+
+type RecordAuthor {
+  id String
+}
+
+type RecordUser {
+  id String
+}
+
+type RecordInput {
+  reason String
+  action Int
+}
