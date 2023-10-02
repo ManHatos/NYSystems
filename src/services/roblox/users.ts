@@ -79,7 +79,7 @@ export const users = {
 	},
 
 	/** search for a roblox user using their username, currently no support for pagination */
-	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 25): Promise<UsersSearch[]> {
+	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 10): Promise<UsersSearch[]> {
 		return new Promise((resolve, reject) => {
 			if (query.length < 3) return reject("query is too short");
 			fetch(
@@ -95,7 +95,6 @@ export const users = {
 			)
 				.then(async (response) => {
 					const body = await response.json();
-					console.dir(body)
 					if (response.ok) resolve(body?.data);
 					else if (response.status == 400 && body?.errors[0]?.code == 2)
 						reject("query was filtered");
