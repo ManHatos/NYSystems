@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { roblox } from "../roblox.js";
 
 /** contact the users.roblox.com APIs */
 export const users = {
@@ -17,17 +18,16 @@ export const users = {
 					return reject("retrieving username data failed");
 				}
 			}
-			fetch(process.env.ROBLOX_USER_BASE + "/users/" + id, {
-				method: "GET",
-			})
+
+			roblox
+				.users("GET", `/users/${id}`)
 				.then(async (response) => {
 					const body = await response.json();
 					if (response.ok) resolve(body);
 					else if (response.status == 404 && body?.errors[0]?.code == 3)
 						reject(`user ${id} does not exit`);
 					else {
-						console.dir(await response.json());
-						reject("request error");
+						reject("unknown request error");
 					}
 				})
 				.catch(() => reject("request failed"));
@@ -42,13 +42,13 @@ export const users = {
 		return new Promise(async (resolve, reject) => {
 			if (query.length == 0) return reject("no query provided");
 			if (query.every((item) => typeof item == "string")) {
-				fetch(process.env.ROBLOX_USER_BASE + "/usernames/users", {
-					method: "POST",
-					body: JSON.stringify({
-						usernames: query,
-						excludeBannedUsers: banned,
-					}),
-				})
+				roblox
+					.users("POST", "/usernames/users", {
+						body: {
+							usernames: query,
+							excludeBannedUsers: banned,
+						},
+					})
 					.then(async (response) => {
 						const body = await response.json();
 						if (response.ok) {
@@ -59,13 +59,13 @@ export const users = {
 					})
 					.catch(() => reject("request failed"));
 			} else if (query.every((item) => typeof item == "number")) {
-				fetch(process.env.ROBLOX_USER_BASE + "/users", {
-					method: "POST",
-					body: JSON.stringify({
-						userIds: query,
-						excludeBannedUsers: banned,
-					}),
-				})
+				roblox
+					.users("POST", "/users", {
+						body: {
+							userIds: query,
+							excludeBannedUsers: banned,
+						},
+					})
 					.then(async (response) => {
 						const body = await response.json();
 						if (response.ok) resolve(body?.data);
@@ -82,17 +82,13 @@ export const users = {
 	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 10): Promise<UsersSearch[]> {
 		return new Promise((resolve, reject) => {
 			if (query.length < 3) return reject("query is too short");
-			fetch(
-				process.env.ROBLOX_USER_BASE +
-					"/users/search?" +
-					new URLSearchParams({
-						keyword: encodeURI(query),
-						limit: String(limit),
-					}),
-				{
-					method: "GET",
-				}
-			)
+			roblox
+				.users("GET", "/users/search", {
+					params: {
+						keyword: query,
+						limit,
+					},
+				})
 				.then(async (response) => {
 					const body = await response.json();
 					if (response.ok) resolve(body?.data);
@@ -125,19 +121,15 @@ export const users = {
 			circular: boolean = false
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
-				fetch(
-					process.env.ROBLOX_AVATAR_BASE +
-						"/users/avatar?" +
-						new URLSearchParams({
+				roblox
+					.thumbnails("GET", "/users/avatar", {
+						params: {
 							userIds: String(query),
 							size: String(size),
 							format: "Png",
 							isCircular: String(circular),
-						}),
-					{
-						method: "GET",
-					}
-				)
+						},
+					})
 					.then(async (response) => {
 						const body = await response.json();
 						if (response.ok) resolve(body?.data);
@@ -165,19 +157,15 @@ export const users = {
 			circular: boolean = false
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
-				fetch(
-					process.env.ROBLOX_AVATAR_BASE +
-						"/users/avatar-bust?" +
-						new URLSearchParams({
-							userIds: String(query),
-							size: String(size),
+				roblox
+					.thumbnails("GET", "/users/avatar-bust", {
+						params: {
+							userIds: query,
+							size: size,
 							format: "Png",
-							isCircular: String(circular),
-						}),
-					{
-						method: "GET",
-					}
-				)
+							isCircular: circular,
+						},
+					})
 					.then(async (response) => {
 						const body = await response.json();
 						if (response.ok) resolve(body?.data);
@@ -207,19 +195,15 @@ export const users = {
 			circular: boolean = false
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
-				fetch(
-					process.env.ROBLOX_AVATAR_BASE +
-						"/users/avatar-headshot?" +
-						new URLSearchParams({
-							userIds: String(query),
-							size: String(size),
+				roblox
+					.thumbnails("GET", "/users/avatar-headshot", {
+						params: {
+							userIds: query,
+							size: size,
 							format: "Png",
-							isCircular: String(circular),
-						}),
-					{
-						method: "GET",
-					}
-				)
+							isCircular: circular,
+						},
+					})
 					.then(async (response) => {
 						const body = await response.json();
 						if (response.ok) resolve(body?.data);
@@ -258,6 +242,7 @@ export type UsersAvatar = {
 	targetId: number;
 	state: "Error" | "Completed" | "InReview" | "Pending" | "Blocked" | "TemporarilyUnavailable";
 	imageUrl: string;
+	version: string;
 };
 
 export type UsersSearch = {
