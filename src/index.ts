@@ -16,19 +16,24 @@ export const BOT = createBot({
 	token: process.env.TOKEN as string,
 	events: {
 		async interactionCreate(interaction) {
-			// application commands handler
+			log.info(
+				InteractionTypes[interaction.type] + " interaction received by " + interaction?.user?.id
+			);
+
 			if (interaction.type == InteractionTypes.ApplicationCommand) {
+				// application commands handler
 				if (interaction.data?.type == ApplicationCommandTypes.ChatInput) {
+					// slash commands handler
 					modules.commands.has(interaction.data?.name)
 						? modules.commands.get(interaction.data!.name)!.execute(interaction)
-						: log.error(`Unknown application command "/${interaction.data?.name ?? "unknown"}"`);
+						: log.error(`Unknown application command "/${interaction.data?.name ?? "not found"}"`);
 				}
 			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
+				// autocomplete handler
 				const focusedOption = interaction.data?.options?.find((option) => option.focused);
-				console.log("ac data:", interaction.data);
 				modules.autocomplete.has(focusedOption?.name)
 					? modules.autocomplete.get(focusedOption!.name)!.execute(interaction)
-					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "unknown"}"`);
+					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
 			}
 		},
 	},
@@ -39,12 +44,19 @@ export const BOT = createBot({
 // disable default logger
 DiscordenoLogger.setLevel(100 as number);
 
-// set desired interaction properties
-for (const key in BOT.transformers.desiredProperties.interaction) {
-	BOT.transformers.desiredProperties.interaction[
-		key as keyof typeof BOT.transformers.desiredProperties.interaction
-	] = true;
-}
+// set desired properties
+((object) => {
+	const fn = function (object: Record<string, any>) {
+		for (const [key, property] of Object.entries(object)) {
+			if (typeof property === "object" && property) {
+				fn(property);
+				continue;
+			}
+			object[key] = true;
+		}
+	};
+	fn(object);
+})(BOT.transformers.desiredProperties);
 
 // initiate datastore service
 (async () => {
