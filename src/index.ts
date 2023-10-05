@@ -46,7 +46,7 @@ DiscordenoLogger.setLevel(100 as number);
 
 // set desired properties
 ((object) => {
-	const fn = function (object: Record<string, any>) {
+	function fn(object: Record<string, any>) {
 		for (const [key, property] of Object.entries(object)) {
 			if (typeof property === "object" && property) {
 				fn(property);

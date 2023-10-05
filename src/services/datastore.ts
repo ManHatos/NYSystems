@@ -29,3 +29,9 @@ datastore.$on("error", (error) => {
 datastore.$on("query", (event) => {
 	log.info(`Datastore service received query event:\n${event.query}`);
 });
+
+export enum RecordActions {
+	"Ban" = 0,
+	"Kick" = 1,
+	"Warning" = 2,
+}

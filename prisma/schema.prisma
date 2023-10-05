@@ -9,20 +9,28 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// moderation records data
+
 model Records {
-  id        String        @id @map("_id")
+  id        String         @id @map("_id")
   author    RecordAuthor
+  editors   RecordEditor[]
   user      RecordUser
   input     RecordInput
-  date      DateTime      @default(now())
+  createdAt DateTime       @default(now())
 }
 
 type RecordAuthor {
   id String
 }
 
+type RecordEditor {
+  id       String
+  editedAt DateTime @default(now())
+}
+
 type RecordUser {
-  id String
+  id Int
 }
 
 type RecordInput {
