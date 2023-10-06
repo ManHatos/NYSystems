@@ -31,8 +31,10 @@ export const BOT = createBot({
 			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
 				// autocomplete handler
 				const focusedOption = interaction.data?.options?.find((option) => option.focused);
+				if (!focusedOption) return;
+
 				modules.autocomplete.has(focusedOption?.name)
-					? modules.autocomplete.get(focusedOption!.name)!.execute(interaction)
+					? modules.autocomplete.get(focusedOption.name)!.execute(interaction, focusedOption)
 					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
 			}
 		},
@@ -54,7 +56,7 @@ DiscordenoLogger.setLevel(100 as number);
 			}
 			object[key] = true;
 		}
-	};
+	}
 	fn(object);
 })(BOT.transformers.desiredProperties);
 
@@ -74,6 +76,8 @@ DiscordenoLogger.setLevel(100 as number);
 
 // load application commands
 (async () => {
+	// check whether loading commands was requested when starting system
+	if (!process.argv.includes("loadCmd")) return;
 	log.info("Loading application commands...");
 	await BOT.rest
 		.upsertGuildApplicationCommands(
@@ -87,5 +91,6 @@ DiscordenoLogger.setLevel(100 as number);
 // initiate gateway connection
 await BOT.start();
 
-process.on("uncaughtException", (e) => console.log("unhandled exception", e));
-process.on("unhandledRejection", (e) => console.log("unhandled rejection", e));
+// handle fatal process events
+process.on("uncaughtException", (e) => console.log("unhandled exception: ", e));
+process.on("unhandledRejection", (e) => console.log("unhandled rejection: ", e));

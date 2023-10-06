@@ -3,6 +3,7 @@ import {
 	Component,
 	CreateApplicationCommand,
 	Interaction,
+	InteractionDataOption,
 } from "@discordeno/bot";
 
 function moduleTypeFunctions<K extends keyof ModuleElementTypes>(
@@ -99,7 +100,7 @@ export type ModuleAutocompleteElement = {
 		autocomplete: true;
 	};
 	/** the handler for any interactions referencing this element */
-	execute: (interaction: Interaction) => Promise<unknown | void>;
+	execute: (interaction: Interaction, option: InteractionDataOption) => Promise<unknown | void>;
 };
 
 export type ModuleComponentElement = {

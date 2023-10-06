@@ -6,7 +6,7 @@ export const users = {
 	/** return detailed information about a roblox user using their unique identifier or username (more requests) */
 	single: async function (query: string | number): Promise<UsersSingle> {
 		return new Promise(async (resolve, reject) => {
-			let id = query;
+			let id: number;
 			if (typeof query == "string") {
 				if (query.length < 3) return reject("username is too short");
 				if (!query.match(/^(?=^[^_\n]+_?[^_\n]+$)\w{3,}$/gm)) return reject("invalid username");
@@ -17,10 +17,14 @@ export const users = {
 				} catch (error) {
 					return reject("retrieving username data failed");
 				}
+			} else {
+				id = query;
 			}
 
+			if (!isFinite(id) || id == 0) return reject("invalid identifier");
+
 			roblox
-				.users("GET", `/users/${id}`)
+				.users("GET", "/users/" + id)
 				.then(async (response) => {
 					const body = await response.json();
 					if (response.ok) resolve(body);
