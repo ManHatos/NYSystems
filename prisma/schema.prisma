@@ -9,31 +9,43 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// common object types
+
+type DiscordUser {
+  id String
+}
+
+type RobloxUser {
+  id BigInt
+}
+
 // moderation records data
 
 model Records {
   id        String         @id @map("_id")
-  author    RecordAuthor
+  author    DiscordUser
   editors   RecordEditor[]
-  user      RecordUser
   input     RecordInput
   createdAt DateTime       @default(now())
 }
 
-type RecordAuthor {
-  id String
-}
-
 type RecordEditor {
-  id       String
+  user     DiscordUser
   editedAt DateTime @default(now())
 }
 
-type RecordUser {
-  id Int
-}
-
 type RecordInput {
+  user   RobloxUser
   reason String
   action Int
+}
+
+// user notes
+// merging to "Users" model with system NEXUS after development
+
+model Notes {
+  user      RobloxUser @id @map("_id")
+  note      String
+  createdAt DateTime   @default(now())
+  editedAt  DateTime?
 }
