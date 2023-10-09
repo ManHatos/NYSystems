@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionTypes } from "@discordeno/bot";
 import { ModuleAutocompleteElement, ModuleAutocompleteIdentifiers } from "../../modules.js";
-import { users } from "../../../services/roblox.js";
+import { roblox } from "../../../services/roblox.js";
 import { throttle } from "../../../helpers/throttle.js";
 import { limitString } from "../../../helpers/utility.js";
 
@@ -28,7 +28,7 @@ export default {
 		throttle(["autocomplete", id, String(interaction.user.id)], String(interaction.id), 750)
 			.then(() => {
 				if (input.startsWith("#")) {
-					users
+					roblox.users
 						.single(Number(input.substring(1)))
 						.then(async (user) => {
 							await interaction.respond({
@@ -36,7 +36,7 @@ export default {
 									{
 										name:
 											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: String(user.id),
+										value: "::" + String(user.id),
 									},
 								],
 							});
@@ -54,7 +54,7 @@ export default {
 							}
 						});
 				} else {
-					users
+					roblox.users
 						.search(input)
 						.then(async (response) => {
 							await interaction.respond({
@@ -62,7 +62,7 @@ export default {
 									return {
 										name:
 											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: String(user.id),
+										value: "::" + String(user.id),
 									};
 								}),
 							});

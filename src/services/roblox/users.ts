@@ -1,7 +1,6 @@
 import "dotenv/config";
-import { roblox } from "../roblox.js";
+import { request as roblox } from "../roblox.js";
 
-/** contact the users.roblox.com APIs */
 export const users = {
 	/** return detailed information about a roblox user using their unique identifier or username (more requests) */
 	single: async function (query: string | number): Promise<UsersSingle> {

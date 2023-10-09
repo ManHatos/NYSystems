@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 /** send authenticated HTTP requests to supported Roblox APIs */
-export const roblox = {
+export const request = {
 	users: function (
 		method: HTTPMethods,
 		endpoint: string,
@@ -9,7 +9,7 @@ export const roblox = {
 		version?: APIVersions,
 		authenticate?: boolean
 	) {
-		return request("users", method, endpoint, options, version, authenticate);
+		return makeRequest("users", method, endpoint, options, version, authenticate);
 	},
 	thumbnails: function (
 		method: HTTPMethods,
@@ -18,15 +18,21 @@ export const roblox = {
 		version?: APIVersions,
 		authenticate?: boolean
 	) {
-		return request("thumbnails", method, endpoint, options, version, authenticate);
+		return makeRequest("thumbnails", method, endpoint, options, version, authenticate);
 	},
 };
 
 // re-exporting supported Roblox APIs
-export { users } from "./roblox/users.js";
+import { users } from "./roblox/users.js";
+
+// contact the Roblox APIs
+export const roblox = {
+	/** contact the users.roblox.com APIs */
+	users,
+};
 
 /** send raw customizable requests to supported Roblox APIs */
-function request(
+function makeRequest(
 	type: "users" | "thumbnails",
 	method: HTTPMethods,
 	endpoint: string,
