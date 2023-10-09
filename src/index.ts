@@ -13,7 +13,7 @@ import {
 
 /** main bot object, handles all incoming and outgoing requests to and from Discord */
 export const BOT = createBot({
-	token: process.env.TOKEN as string,
+	token: process.env.DISCORD_TOKEN,
 	events: {
 		async interactionCreate(interaction) {
 			log.info(
@@ -81,7 +81,7 @@ DiscordenoLogger.setLevel(100 as number);
 	log.info("Loading application commands...");
 	await BOT.rest
 		.upsertGuildApplicationCommands(
-			process.env.GUILD_ID as string,
+			process.env.DISCORD_GUILD,
 			modules.commands.data.map((element) => element.data)
 		)
 		.then((response) => log.info("Successfully loaded commands\n" + response))

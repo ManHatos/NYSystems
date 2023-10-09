@@ -3,11 +3,11 @@ import { createGatewayManager, createRestManager } from "@discordeno/bot";
 import { log } from "../helpers/logger.js";
 
 export const REST = createRestManager({
-	token: process.env.TOKEN as string,
+	token: process.env.DISCORD_TOKEN,
 });
 
 export const GATEWAY = createGatewayManager({
-	token: process.env.TOKEN as string,
+	token: process.env.DISCORD_TOKEN,
 	events: {
 		connecting() {
 			log.info("Connecting to gateway...");

@@ -47,7 +47,6 @@ export default {
 								typeof e == "string" &&
 								(e.includes("does not exist") || e == "invalid identifier")
 							) {
-								console.log("test success");
 								await interaction.respond({
 									choices: [],
 								});

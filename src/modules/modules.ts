@@ -1,7 +1,8 @@
 import {
 	ApplicationCommandOption,
 	Component,
-	CreateApplicationCommand,
+	CreateContextApplicationCommand,
+	CreateSlashApplicationCommand,
 	Interaction,
 	InteractionDataOption,
 } from "@discordeno/bot";
@@ -87,7 +88,7 @@ export type ModuleCommandElement = {
 	/** the internal identifier for the module element */
 	id: ModuleCommandIdentifiers;
 	/** the data for the application command */
-	data: CreateApplicationCommand;
+	data: CreateSlashApplicationCommand & CreateContextApplicationCommand;
 	/** the handler for any interactions referencing this element */
 	execute: (interaction: Interaction) => Promise<unknown | void>;
 };
