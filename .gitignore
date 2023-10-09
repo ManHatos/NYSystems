@@ -1,8 +1,0 @@
-# dependencies
-node_modules/
-
-# local development
-.env
-dist/
-.vscode
-testbench.ts
