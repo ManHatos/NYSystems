@@ -3,7 +3,7 @@ import { GATEWAY as gateway, REST as rest } from "./services/discord.js";
 import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
-import { modules } from "./modules/modules.js";
+import { modules } from "./systems/modules.js";
 import {
 	ApplicationCommandTypes,
 	InteractionTypes,
