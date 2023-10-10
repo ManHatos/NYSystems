@@ -1,7 +1,7 @@
-import { ModuleCommandElement, ModuleCommandIdentifiers } from "../../modules.js";
+import { SystemCommandElement, SystemCommandIdentifiers } from "../../systems.js";
 import autocomplete from "../autocomplete/user.js";
 
-export const id = ModuleCommandIdentifiers.MODERATION_HISTORY_VIEW;
+export const id = SystemCommandIdentifiers.MODERATION_HISTORY_VIEW;
 export default {
 	id,
 	data: {
@@ -10,4 +10,4 @@ export default {
 		options: [autocomplete.data],
 	},
 	async execute(interaction) {},
-} as ModuleCommandElement;
+} as SystemCommandElement;

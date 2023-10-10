@@ -7,9 +7,7 @@ import {
 	InteractionDataOption,
 } from "@discordeno/bot";
 
-function moduleTypeFunctions<K extends keyof ModuleElementTypes>(
-	type: K
-): MainModuleManagerSharedFunctions<K> {
+function systemDefaults<K extends keyof SystemElements>(type: K): MainSystemManagerDefaults<K> {
 	return {
 		get(id) {
 			return this.data.filter((element) => element.id == id)[0] ?? undefined;
@@ -23,79 +21,79 @@ function moduleTypeFunctions<K extends keyof ModuleElementTypes>(
 }
 
 /** the main modules manager, includes all module elements based on their type */
-export const modules = {
-	set(module) {
-		if (module.autocomplete) this.autocomplete.data.push(...module.autocomplete);
-		if (module.components) this.components.data.push(...module.components);
-		if (module.commands) this.commands.data.push(...module.commands);
+export const systems = {
+	set(system) {
+		if (system.autocomplete) this.autocomplete.data.push(...system.autocomplete);
+		if (system.components) this.components.data.push(...system.components);
+		if (system.commands) this.commands.data.push(...system.commands);
 	},
-	autocomplete: moduleTypeFunctions("autocomplete"),
-	components: moduleTypeFunctions("components"),
-	commands: moduleTypeFunctions("commands"),
-} as MainModuleManager;
+	autocomplete: systemDefaults("autocomplete"),
+	components: systemDefaults("components"),
+	commands: systemDefaults("commands"),
+} as MainSystemManager;
 
-import * as moderation from "./moderation/manager.js";
-modules.set(moderation);
+import * as moderation from "./sentinel/manager.js";
+systems.set(moderation);
 
 // modules typings
 
-export const enum ModuleCommandIdentifiers {
+export const enum SystemCommandIdentifiers {
 	/** command used to create new moderations for a Roblox user */
 	"MODERATION_CREATE_NEW" = "log",
 	/** command used to view moderation history for a Roblox user */
 	"MODERATION_HISTORY_VIEW" = "records",
 }
 
-export const enum ModuleAutocompleteIdentifiers {
+export const enum SystemAutocompleteIdentifiers {
 	/** command option used to automatically retrieve Roblox users information based on input or on executer's user history */
 	"MODERATION_USER" = "user",
 }
 
-export const enum ModuleComponentIdentifiers {
+export const enum SystemComponentIdentifiers {
 	"PLACEHOLDER" = "",
 }
 
-export type ModuleManager = {
-	[K in keyof ModuleElementTypes]?: ModuleElementTypes[K][];
+export type SystemManager = {
+	[K in keyof SystemElements]?: SystemElements[K][];
 };
 
-export type MainModuleManager = Required<{
-	[K in keyof ModuleElementTypes]: MainModuleManagerSharedFunctions<K>;
+export type MainSystemManager = Required<{
+	[K in keyof SystemElements]: MainSystemManagerDefaults<K>;
 }> & {
 	/** a function that pushes all elements within a module manager to their respective data storage based on their types (e.g. `autocomplete` elements => `this.autocomplete.data`) */
-	set: (module: ModuleManager) => void;
+	set: (module: SystemManager) => void;
 };
 
-export type MainModuleManagerSharedFunctions<K extends keyof ModuleElementTypes> = Required<{
+export type MainSystemManagerDefaults<K extends keyof SystemElements> = Required<{
 	/** an array of all module elements based on their type */
-	data: ModuleElementTypes[K][];
+	data: SystemElements[K][];
 	/** a function that retreives a module element based on its identifier from `this.data` */
-	get: (id: string) => ModuleElementTypes[K] | undefined;
+	get: (id: string) => SystemElements[K] | undefined;
 	/** a function that returns a boolean indicating whether or not this element identifier was found in `this.data` */
 	has: (id: string | undefined | null) => boolean;
 }>;
 
-export type ModuleElementTypes = {
+export type SystemElements = {
 	/** autocomplete elements contain data for and handle all interactions referencing autocomplete options */
-	autocomplete: ModuleAutocompleteElement;
+	autocomplete: SystemAutocompleteElement;
 	/** component elements contain data for and handle all interactions referencing message components such as buttons and select menus, each element contains **one** singular component, all components must be wrapped within an action row */
-	components: ModuleComponentElement;
+	components: SystemComponentElement;
 	/** command elements contain data for and handle all interactions referencing application commands such as slash commands */
-	commands: ModuleCommandElement;
+	commands: SystemCommandElement;
 };
 
-export type ModuleCommandElement = {
+export type SystemCommandElement = {
 	/** the internal identifier for the module element */
-	id: ModuleCommandIdentifiers;
+	id: SystemCommandIdentifiers;
 	/** the data for the application command */
 	data: CreateSlashApplicationCommand & CreateContextApplicationCommand;
 	/** the handler for any interactions referencing this element */
 	execute: (interaction: Interaction) => Promise<unknown | void>;
 };
 
-export type ModuleAutocompleteElement = {
+export type SystemAutocompleteElement = {
 	/** the internal identifier for the module element */
-	id: ModuleAutocompleteIdentifiers;
+	id: SystemAutocompleteIdentifiers;
 	/** the data for the autocomplete option */
 	data: ApplicationCommandOption & {
 		autocomplete: true;
@@ -104,9 +102,9 @@ export type ModuleAutocompleteElement = {
 	execute: (interaction: Interaction, option: InteractionDataOption) => Promise<unknown | void>;
 };
 
-export type ModuleComponentElement = {
+export type SystemComponentElement = {
 	/** the internal identifier for the module element */
-	id: ModuleComponentIdentifiers;
+	id: SystemComponentIdentifiers;
 	/** the data for the specific component (excluding all action rows) */
 	data: MessageComponent;
 	/** the handler for any interactions referencing this element */
@@ -114,5 +112,5 @@ export type ModuleComponentElement = {
 };
 
 interface MessageComponent extends Omit<Component, "customId"> {
-	customId: ModuleComponentIdentifiers;
+	customId: SystemComponentIdentifiers;
 }

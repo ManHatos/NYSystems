@@ -3,7 +3,7 @@ import { GATEWAY as gateway, REST as rest } from "./services/discord.js";
 import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
-import { modules } from "./systems/modules.js";
+import { systems } from "./systems/systems.js";
 import {
 	ApplicationCommandTypes,
 	InteractionTypes,
@@ -24,8 +24,8 @@ export const BOT = createBot({
 				// application commands handler
 				if (interaction.data?.type == ApplicationCommandTypes.ChatInput) {
 					// slash commands handler
-					modules.commands.has(interaction.data?.name)
-						? modules.commands.get(interaction.data!.name)!.execute(interaction)
+					systems.commands.has(interaction.data?.name)
+						? systems.commands.get(interaction.data!.name)!.execute(interaction)
 						: log.error(`Unknown application command "/${interaction.data?.name ?? "not found"}"`);
 				}
 			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
@@ -33,8 +33,8 @@ export const BOT = createBot({
 				const focusedOption = interaction.data?.options?.find((option) => option.focused);
 				if (!focusedOption) return;
 
-				modules.autocomplete.has(focusedOption?.name)
-					? modules.autocomplete.get(focusedOption.name)!.execute(interaction, focusedOption)
+				systems.autocomplete.has(focusedOption?.name)
+					? systems.autocomplete.get(focusedOption.name)!.execute(interaction, focusedOption)
 					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
 			}
 		},
@@ -82,7 +82,7 @@ DiscordenoLogger.setLevel(100 as number);
 	await BOT.rest
 		.upsertGuildApplicationCommands(
 			process.env.DISCORD_GUILD,
-			modules.commands.data.map((element) => element.data)
+			systems.commands.data.map((element) => element.data)
 		)
 		.then((response) => log.info("Successfully loaded commands\n" + response))
 		.catch((error) => log.error("Error loading commands\n" + JSON.stringify(error)));

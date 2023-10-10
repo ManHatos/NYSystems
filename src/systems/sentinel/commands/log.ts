@@ -1,9 +1,9 @@
 import "dotenv/config";
 import {
-	ModuleAutocompleteIdentifiers,
-	ModuleCommandElement,
-	ModuleCommandIdentifiers,
-} from "../../modules.js";
+	SystemAutocompleteIdentifiers,
+	SystemCommandElement,
+	SystemCommandIdentifiers,
+} from "../../systems.js";
 import { ApplicationCommandOptionTypes, InteractionDataOption, avatarUrl } from "@discordeno/bot";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { roblox } from "../../../services/roblox.js";
@@ -11,7 +11,7 @@ import { UsersAvatar } from "../../../services/roblox/users.js";
 import autocomplete1 from "../autocomplete/user.js";
 import chalk from "chalk";
 
-export const id = ModuleCommandIdentifiers.MODERATION_CREATE_NEW;
+export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
 	id,
 	data: {
@@ -54,13 +54,13 @@ export default {
 			return await interaction.edit("error1");
 
 		if (
-			typeof options[ModuleAutocompleteIdentifiers.MODERATION_USER]?.value != "string" ||
+			typeof options[SystemAutocompleteIdentifiers.MODERATION_USER]?.value != "string" ||
 			typeof options.reason?.value != "string" ||
 			typeof options.action?.value != "string"
 		)
 			return;
 		const input = {
-			user: options[ModuleAutocompleteIdentifiers.MODERATION_USER].value,
+			user: options[SystemAutocompleteIdentifiers.MODERATION_USER].value,
 			reason: options.reason.value,
 			action: Number(options.action.value) as RecordActions,
 		};
@@ -224,4 +224,4 @@ export default {
 				await interaction.edit("error6");
 			});
 	},
-} as ModuleCommandElement;
+} as SystemCommandElement;

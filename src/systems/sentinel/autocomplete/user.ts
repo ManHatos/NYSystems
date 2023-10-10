@@ -1,10 +1,10 @@
 import { ApplicationCommandOptionTypes } from "@discordeno/bot";
-import { ModuleAutocompleteElement, ModuleAutocompleteIdentifiers } from "../../modules.js";
+import { SystemAutocompleteElement, SystemAutocompleteIdentifiers } from "../../systems.js";
 import { roblox } from "../../../services/roblox.js";
 import { throttle } from "../../../helpers/throttle.js";
 import { limitString } from "../../../helpers/utility.js";
 
-export const id = ModuleAutocompleteIdentifiers.MODERATION_USER;
+export const id = SystemAutocompleteIdentifiers.MODERATION_USER;
 export default {
 	id,
 	data: {
@@ -71,4 +71,4 @@ export default {
 			})
 			.catch(() => console.error("overwritten"));
 	},
-} as ModuleAutocompleteElement;
+} as SystemAutocompleteElement;
