@@ -1,10 +1,16 @@
 import {
 	ApplicationCommandOption,
-	Component,
+	ButtonComponent,
 	CreateContextApplicationCommand,
 	CreateSlashApplicationCommand,
+	InputTextComponent,
 	Interaction,
 	InteractionDataOption,
+	SelectMenuChannelsComponent,
+	SelectMenuComponent,
+	SelectMenuRolesComponent,
+	SelectMenuUsersAndRolesComponent,
+	SelectMenuUsersComponent,
 } from "@discordeno/bot";
 
 function systemDefaults<K extends keyof SystemElements>(type: K): MainSystemManagerDefaults<K> {
@@ -50,7 +56,8 @@ export const enum SystemAutocompleteIdentifiers {
 }
 
 export const enum SystemComponentIdentifiers {
-	"PLACEHOLDER" = "",
+	/** component used to confirm the creation of a moderation log */
+	"MODERATION_LOG_CONFIRM" = "confirmLog",
 }
 
 export type SystemManager = {
@@ -106,11 +113,14 @@ export type SystemComponentElement = {
 	/** the internal identifier for the module element */
 	id: SystemComponentIdentifiers;
 	/** the data for the specific component (excluding all action rows) */
-	data: MessageComponent;
+	data:
+		| ButtonComponent
+		| InputTextComponent
+		| SelectMenuComponent
+		| SelectMenuChannelsComponent
+		| SelectMenuRolesComponent
+		| SelectMenuUsersComponent
+		| SelectMenuUsersAndRolesComponent;
 	/** the handler for any interactions referencing this element */
-	execute: (interaction: Interaction) => Promise<unknown | void>;
+	execute: (interaction: Interaction, data: Record<string, any>) => Promise<unknown | void>;
 };
-
-interface MessageComponent extends Omit<Component, "customId"> {
-	customId: SystemComponentIdentifiers;
-}

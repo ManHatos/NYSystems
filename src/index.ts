@@ -1,47 +1,10 @@
 import "dotenv/config";
-import { GATEWAY as gateway, REST as rest } from "./services/discord.js";
+import { discord } from "./services/discord.js";
 import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
 import { systems } from "./systems/systems.js";
-import {
-	ApplicationCommandTypes,
-	InteractionTypes,
-	createBot,
-	logger as DiscordenoLogger,
-} from "@discordeno/bot";
-
-/** main bot object, handles all incoming and outgoing requests to and from Discord */
-export const BOT = createBot({
-	token: process.env.DISCORD_TOKEN,
-	events: {
-		async interactionCreate(interaction) {
-			log.info(
-				InteractionTypes[interaction.type] + " interaction received by " + interaction?.user?.id
-			);
-
-			if (interaction.type == InteractionTypes.ApplicationCommand) {
-				// application commands handler
-				if (interaction.data?.type == ApplicationCommandTypes.ChatInput) {
-					// slash commands handler
-					systems.commands.has(interaction.data?.name)
-						? systems.commands.get(interaction.data!.name)!.execute(interaction)
-						: log.error(`Unknown application command "/${interaction.data?.name ?? "not found"}"`);
-				}
-			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
-				// autocomplete handler
-				const focusedOption = interaction.data?.options?.find((option) => option.focused);
-				if (!focusedOption) return;
-
-				systems.autocomplete.has(focusedOption?.name)
-					? systems.autocomplete.get(focusedOption.name)!.execute(interaction, focusedOption)
-					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
-			}
-		},
-	},
-	gateway,
-	rest,
-});
+import { logger as DiscordenoLogger } from "@discordeno/bot";
 
 // disable default logger
 DiscordenoLogger.setLevel(100 as number);
@@ -58,7 +21,7 @@ DiscordenoLogger.setLevel(100 as number);
 		}
 	}
 	fn(object);
-})(BOT.transformers.desiredProperties);
+})(discord.transformers.desiredProperties);
 
 // initiate datastore service
 (async () => {
@@ -79,7 +42,7 @@ DiscordenoLogger.setLevel(100 as number);
 	// check whether loading commands was requested when starting system
 	if (!process.argv.includes("loadCmd")) return;
 	log.info("Loading application commands...");
-	await BOT.rest
+	await discord.rest
 		.upsertGuildApplicationCommands(
 			process.env.DISCORD_GUILD,
 			systems.commands.data.map((element) => element.data)
@@ -89,7 +52,7 @@ DiscordenoLogger.setLevel(100 as number);
 })();
 
 // initiate gateway connection
-await BOT.start();
+await discord.start();
 
 // handle fatal process events
 process.on("uncaughtException", (e) => console.log("unhandled exception: ", e));
