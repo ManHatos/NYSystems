@@ -1,10 +1,14 @@
+import "dotenv/config";
 import {
 	ApplicationCommandOption,
 	ButtonComponent,
+	Camelize,
 	CreateContextApplicationCommand,
 	CreateSlashApplicationCommand,
+	DiscordEmbed,
 	InputTextComponent,
 	Interaction,
+	InteractionCallbackData,
 	InteractionDataOption,
 	SelectMenuChannelsComponent,
 	SelectMenuComponent,
@@ -124,3 +128,28 @@ export type SystemComponentElement = {
 	/** the handler for any interactions referencing this element */
 	execute: (interaction: Interaction, data: Record<string, any>) => Promise<unknown | void>;
 };
+
+export type SystemResponses = Record<number, InteractionCallbackData>;
+
+export function Embeds(
+	/** an array of discord camelized embed objects that will be converted into the default systems embed format */
+	embeds: Pick<
+		Embed,
+		"author" | "description" | "fields" | "footer" | "thumbnail" | "url" | "title"
+	>[],
+	/** override the default embed generator format */
+	override?: Pick<Embed, "color" | "image" | "timestamp">
+): Embed[] {
+	return embeds.map((inputted) => {
+		let embed: Camelize<DiscordEmbed> = inputted;
+		if (!override?.color) embed.color = Number(process.env.SENTINEL_EMBED_COLOR);
+		if (!override?.image)
+			embed.image = {
+				url: process.env.URI_EMBED_WIDTH_LIMITER,
+			};
+		if (!override?.timestamp) embed.timestamp = new Date().toISOString();
+		return embed;
+	});
+}
+
+export type Embed = Camelize<DiscordEmbed>;

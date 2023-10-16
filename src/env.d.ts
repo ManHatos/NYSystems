@@ -42,6 +42,10 @@ declare global {
 			SENTINEL_WEBHOOK_TOKEN: string;
 			/** webhook id for the sentinal system user records */
 			SENTINEL_WEBHOOK_ID: string;
+
+			// sentinel config
+			/** default embed color */
+			SENTINEL_EMBED_COLOR: string;
 		}
 	}
 }
