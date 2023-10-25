@@ -54,8 +54,13 @@ export const discord = createBot({
 				// application commands handler
 				if (interaction.data?.type == ApplicationCommandTypes.ChatInput) {
 					// slash commands handler
-					systems.commands.has(interaction.data?.name)
-						? systems.commands.get(interaction.data!.name)!.execute(interaction)
+					systems.commands.has(interaction.data.name)
+						? systems.commands
+								.get(interaction.data.name)
+								?.execute(
+									interaction,
+									interaction.data.options?.map((option) => option.value) ?? []
+								)
 						: log.error(`Unknown application command "/${interaction.data?.name ?? "not found"}"`);
 				}
 			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
@@ -64,14 +69,15 @@ export const discord = createBot({
 				if (!focusedOption) return;
 
 				systems.autocomplete.has(focusedOption?.name)
-					? systems.autocomplete.get(focusedOption.name)!.execute(interaction, focusedOption)
+					? systems.autocomplete.get(focusedOption.name)?.execute(interaction, focusedOption)
 					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
 			} else if (interaction.type == InteractionTypes.MessageComponent) {
 				// components handler
 				if (!interaction.data?.customId) return;
 				const parsed = parseCID(interaction.data.customId);
+
 				systems.components.has(parsed.id)
-					? systems.components.get(parsed.id)!.execute(interaction, parsed.data)
+					? systems.components.get(parsed.id)?.execute(interaction, parsed.data)
 					: log.error(`Unknown message component "${parsed.id}"`);
 			}
 		},

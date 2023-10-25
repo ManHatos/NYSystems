@@ -3,9 +3,10 @@ import {
 	ApplicationCommandOption,
 	ButtonComponent,
 	Camelize,
-	CreateContextApplicationCommand,
+	CreateMessageOptions,
 	CreateSlashApplicationCommand,
 	DiscordEmbed,
+	ExecuteWebhook,
 	InputTextComponent,
 	Interaction,
 	InteractionCallbackData,
@@ -64,6 +65,13 @@ export const enum SystemComponentIdentifiers {
 	"MODERATION_LOG_CONFIRM" = "confirmLog",
 }
 
+export const enum ResponseIdentifiers {
+	/** response sent prompting a confirmation after a `MODERATION_CREATE_NEW` interaction */
+	"MODERATION_CREATE_CONFIRM",
+	/** response sent following a `MODERATION_CREATE_NEW` interaction */
+	"MODERATION_CREATED_SUCCESS",
+}
+
 export type SystemManager = {
 	[K in keyof SystemElements]?: SystemElements[K][];
 };
@@ -97,9 +105,12 @@ export type SystemCommandElement = {
 	/** the internal identifier for the module element */
 	id: SystemCommandIdentifiers;
 	/** the data for the application command */
-	data: CreateSlashApplicationCommand & CreateContextApplicationCommand;
+	data: CreateSlashApplicationCommand;
 	/** the handler for any interactions referencing this element */
-	execute: (interaction: Interaction) => Promise<unknown | void>;
+	execute: (
+		interaction: Interaction,
+		values: InteractionDataOption["value"][]
+	) => Promise<unknown | void>;
 };
 
 export type SystemAutocompleteElement = {
@@ -129,7 +140,16 @@ export type SystemComponentElement = {
 	execute: (interaction: Interaction, data: Record<string, any>) => Promise<unknown | void>;
 };
 
-export type SystemResponses = Record<number, InteractionCallbackData>;
+// export type SystemResponse<data extends Record<string, any> = {}> = (
+// 	id: ResponseIdentifiers,
+// 	data: Partial<data>
+// ) => InteractionCallbackData | ExecuteWebhook | CreateMessageOptions;
+
+export type SystemResponse<data extends Partial<Record<ResponseIdentifiers, any>>> = {
+	[key in keyof data]: (
+		data: data[key]
+	) => CreateMessageOptions | ExecuteWebhook | InteractionCallbackData;
+};
 
 export function Embeds(
 	/** an array of discord camelized embed objects that will be converted into the default systems embed format */
@@ -140,14 +160,14 @@ export function Embeds(
 	/** override the default embed generator format */
 	override?: Pick<Embed, "color" | "image" | "timestamp">
 ): Embed[] {
-	return embeds.map((inputted) => {
-		let embed: Camelize<DiscordEmbed> = inputted;
-		if (!override?.color) embed.color = Number(process.env.SENTINEL_EMBED_COLOR);
-		if (!override?.image)
-			embed.image = {
-				url: process.env.URI_EMBED_WIDTH_LIMITER,
-			};
-		if (!override?.timestamp) embed.timestamp = new Date().toISOString();
+	return embeds.map((input) => {
+		let embed: Camelize<DiscordEmbed> = input;
+		embed.color = override?.color ?? Number(process.env.SENTINEL_EMBED_COLOR_PRIMARY);
+		embed.image = override?.image ?? {
+			url: process.env.URI_EMBED_WIDTH_LIMITER,
+		};
+		embed.timestamp = override?.timestamp ?? new Date().toISOString();
+		
 		return embed;
 	});
 }

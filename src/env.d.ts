@@ -6,6 +6,8 @@ declare global {
 			DISCORD_TOKEN: string;
 			/** the primary guild identifier */
 			DISCORD_GUILD: string;
+			/** default color used instead of undefined colors in embeds */
+			DISCORD_EMBED_COLOR: string;
 
 			// roblox
 			/** the `.ROBLOSECURITY` cookie for the system's Roblox bot account */
@@ -38,14 +40,18 @@ declare global {
 			URI_EMBED_WIDTH_LIMITER: string;
 
 			// sentinel system
-			/** webhook token for the sentinal system user records */
+			/** webhook token used by sentinal for user records */
 			SENTINEL_WEBHOOK_TOKEN: string;
-			/** webhook id for the sentinal system user records */
+			/** webhook identifier used by sentinal for user records */
 			SENTINEL_WEBHOOK_ID: string;
-
-			// sentinel config
-			/** default embed color */
-			SENTINEL_EMBED_COLOR: string;
+			/** channel identifier used by sentinel for user records */
+			SENTINEL_CHANNEL: string;
+			/** primary embed color used be sentinel in most messages */
+			SENTINEL_EMBED_COLOR_PRIMARY: string;
+			/** "preview" embed color used be sentinel in record previews */
+			SENTINEL_EMBED_COLOR_PREVIEW: string;
+			/** prefix that is used to identify autocomplete choices in autocomplete options */
+			SENTINEL_USER_AUTOCOMPLETE_PREFIX: string;
 		}
 	}
 }

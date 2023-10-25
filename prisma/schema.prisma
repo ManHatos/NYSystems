@@ -12,7 +12,7 @@ generator client {
 // common object types
 
 type DiscordUser {
-  id String
+  id BigInt
 }
 
 type RobloxUser {
@@ -45,7 +45,7 @@ type RecordInput {
 
 model Notes {
   user      RobloxUser @id @map("_id")
-  note      String
+  message   String
   createdAt DateTime   @default(now())
   editedAt  DateTime?
 }

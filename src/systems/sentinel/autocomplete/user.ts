@@ -12,7 +12,7 @@ export default {
 		autocomplete: true,
 		name: id,
 		description:
-			'The user\'s Roblox username or identifier (ID), use "#" to search using an identifier (ID)',
+			'The user\'s Roblox username or identifier (ID), enter "#" to use an identifier (ID)',
 		required: true,
 	},
 	async execute(interaction, option) {
@@ -36,7 +36,7 @@ export default {
 									{
 										name:
 											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: "::" + String(user.id),
+										value: process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX + String(user.id),
 									},
 								],
 							});
