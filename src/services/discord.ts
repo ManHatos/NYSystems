@@ -8,7 +8,6 @@ import {
 } from "@discordeno/bot";
 import { log } from "../helpers/logger.js";
 import { systems } from "../systems/systems.js";
-import { parseCID } from "../helpers/utility.js";
 
 export const REST = createRestManager({
 	token: process.env.DISCORD_TOKEN,
@@ -74,11 +73,9 @@ export const discord = createBot({
 			} else if (interaction.type == InteractionTypes.MessageComponent) {
 				// components handler
 				if (!interaction.data?.customId) return;
-				const parsed = parseCID(interaction.data.customId);
-
-				systems.components.has(parsed.id)
-					? systems.components.get(parsed.id)?.execute(interaction, parsed.data)
-					: log.error(`Unknown message component "${parsed.id}"`);
+				systems.components.has(interaction.data.customId)
+					? systems.components.get(interaction.data.customId)?.execute(interaction)
+					: log.error(`Unknown message component "${interaction.data.customId}"`);
 			}
 		},
 	},

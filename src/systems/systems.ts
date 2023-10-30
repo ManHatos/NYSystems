@@ -137,7 +137,7 @@ export type SystemComponentElement = {
 		| SelectMenuUsersComponent
 		| SelectMenuUsersAndRolesComponent;
 	/** the handler for any interactions referencing this element */
-	execute: (interaction: Interaction, data: Record<string, any>) => Promise<unknown | void>;
+	execute: (interaction: Interaction) => Promise<unknown | void>;
 };
 
 // export type SystemResponse<data extends Record<string, any> = {}> = (
@@ -167,7 +167,7 @@ export function Embeds(
 			url: process.env.URI_EMBED_WIDTH_LIMITER,
 		};
 		embed.timestamp = override?.timestamp ?? new Date().toISOString();
-		
+
 		return embed;
 	});
 }
