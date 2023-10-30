@@ -61,7 +61,7 @@ export default {
 									return {
 										name:
 											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: "::" + String(user.id),
+										value: process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX + String(user.id),
 									};
 								}),
 							});

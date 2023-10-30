@@ -73,7 +73,7 @@ export const response: SystemResponse<{
 								let count = 1;
 
 								history.splice(5); // limit array length
-								history.forEach((record, index) => {
+								history.forEach((record, index, array) => {
 									if (!record || index >= 5) return;
 									fields.push({
 										name: `\` ${count++} \` https://discord.com/channels/${
@@ -90,6 +90,11 @@ export const response: SystemResponse<{
 											formatAction(record.input.action) +
 											"\n```",
 									});
+									if (index + 1 != array.length)
+										fields.push({
+											name: "** **",
+											value: "** **",
+										});
 								});
 								return fields;
 							})(data.history),

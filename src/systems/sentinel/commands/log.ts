@@ -10,6 +10,8 @@ import autocomplete1 from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar } from "../../../services/roblox/users.js";
+import { cachestore } from "../../../services/cachestore.js";
+import { discord } from "../../../services/discord.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
@@ -41,18 +43,10 @@ export default {
 		],
 	},
 	async execute(interaction, values: [string, string, number]) {
-		const userRecords = await datastore.records.findMany({
-			where: {
-				author: {
-					id: interaction.user.id,
-				},
-			},
-		});
-
-		console.log(values);
+		await interaction.defer(true);
 
 		const robloxUser = await roblox.users.single(
-			values[0].startsWith("::")
+			values[0].startsWith(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX)
 				? Number(values[0].replace(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX, ""))
 				: values[0]
 		);
@@ -60,45 +54,56 @@ export default {
 			async function requestAvatar(
 				retried?: boolean
 			): Promise<UsersAvatar["imageUrl"] | undefined> {
-				return await roblox.users.avatars
-					.full([robloxUser.id], "720x720")
-					.then(async (avatar) => {
-						if (avatar[0]?.state == "Completed") {
-							return avatar[0]?.imageUrl;
-						} else if (
-							!retried &&
-							(avatar[0]?.state == "Pending" ||
-								avatar[0]?.state == "TemporarilyUnavailable" ||
-								avatar[0]?.state == "Error")
-						) {
-							console.error("roblox avatar not ready");
-							return await requestAvatar(true);
-						}
-					})
-					.catch((reason) => {
-						console.error(reason);
-						return undefined;
-					});
+				return await roblox.users.avatars.full([robloxUser.id], "720x720").then(async (avatar) => {
+					if (avatar[0]?.state == "Completed") {
+						return avatar[0]?.imageUrl;
+					} else if (
+						!retried &&
+						(avatar[0]?.state == "Pending" ||
+							avatar[0]?.state == "TemporarilyUnavailable" ||
+							avatar[0]?.state == "Error")
+					) {
+						console.error("roblox avatar not ready");
+						return await requestAvatar(true);
+					}
+				});
 			}
 			return requestAvatar();
 		})();
 
-		await interaction.respond(
-			response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
-				author: interaction.user,
-				history: userRecords,
+		const userRecords = await datastore.records.findMany({
+			where: {
 				input: {
-					reason: values[1],
-					action: values[2],
-					warningCount: userRecords.filter((record) => record.input.action == RecordActions.Warning)
-						.length,
+					is: {
+						user: {
+							id: robloxUser.id,
+						},
+					},
 				},
-				roblox: {
-					user: robloxUser,
-					avatar: robloxAvatar,
-				},
-			}),
-			{ isPrivate: true }
-		);
+			},
+		});
+
+		await interaction
+			.edit(
+				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
+					author: interaction.user,
+					history: userRecords,
+					input: {
+						reason: values[1],
+						action: values[2],
+						warningCount: userRecords.filter(
+							(record) => record.input.action == RecordActions.Warning
+						).length,
+					},
+					roblox: {
+						user: robloxUser,
+						avatar: robloxAvatar,
+					},
+				})
+			)
+			.then(async () => {
+				const response = await discord.rest.getOriginalInteractionResponse(interaction.token);
+				await cachestore.setEx(["cache", interaction.user.id, response.id].join("/"), 16 * 60, "");
+			});
 	},
 } as SystemCommandElement;
