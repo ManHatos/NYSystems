@@ -12,6 +12,7 @@ import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar } from "../../../services/roblox/users.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
+import { command1CacheData } from "../manager.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
@@ -103,7 +104,20 @@ export default {
 			)
 			.then(async () => {
 				const response = await discord.rest.getOriginalInteractionResponse(interaction.token);
-				await cachestore.setEx(["cache", interaction.user.id, response.id].join("/"), 16 * 60, "");
+				await cachestore.setEx(
+					["cache", interaction.user.id, response.id].join("/"),
+					16 * 60,
+					JSON.stringify({
+						input: {
+							reason: values[1],
+							action: values[2],
+						},
+						roblox: {
+							user: robloxUser,
+							avatar: robloxAvatar,
+						},
+					} as command1CacheData)
+				);
 			});
 	},
 } as SystemCommandElement;
