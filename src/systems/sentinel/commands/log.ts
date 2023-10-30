@@ -83,6 +83,9 @@ export default {
 				},
 			},
 		});
+		const warningCount = userRecords.filter(
+			(record) => record.input.action == RecordActions.Warning
+		).length;
 
 		await interaction
 			.edit(
@@ -92,9 +95,7 @@ export default {
 					input: {
 						reason: values[1],
 						action: values[2],
-						warningCount: userRecords.filter(
-							(record) => record.input.action == RecordActions.Warning
-						).length,
+						warningCount,
 					},
 					roblox: {
 						user: robloxUser,
@@ -111,6 +112,7 @@ export default {
 						input: {
 							reason: values[1],
 							action: values[2],
+							warningCount,
 						},
 						roblox: {
 							user: robloxUser,

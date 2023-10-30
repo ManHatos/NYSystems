@@ -70,6 +70,10 @@ export const enum ResponseIdentifiers {
 	"MODERATION_CREATE_CONFIRM",
 	/** response sent following a `MODERATION_CREATE_NEW` interaction */
 	"MODERATION_CREATED_SUCCESS",
+	/** updated `MODERATION_CREATE_CONFIRM` response shown following a successful moderation record creation */
+	"MODERATION_CREATE_CONFIRM_UPDATE",
+	/** a moderation record */
+	"MODERATION_RECORD_CREATE",
 }
 
 export type SystemManager = {

@@ -21,6 +21,20 @@ export const response: SystemResponse<{
 		};
 		history: Partial<Records[]>;
 	};
+	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]: void;
+	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]: void;
+	[ResponseIdentifiers.MODERATION_RECORD_CREATE]: {
+		author: User;
+		roblox: {
+			user: UsersSingle;
+			avatar?: UsersAvatar["imageUrl"];
+		};
+		input: {
+			reason: string;
+			action: RecordActions;
+			warningCount: number;
+		};
+	};
 }> = {
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM](data) {
 		return {
@@ -106,6 +120,83 @@ export const response: SystemResponse<{
 				}
 			),
 			components: [
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [component1.data],
+				},
+			],
+		};
+	},
+	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]() {
+		return {
+			content: "your record has been created successfully",
+		};
+	},
+	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]() {
+		return {
+			components: [
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [
+						Object.assign(component1.data, {
+							disabled: true,
+						}),
+					],
+				},
+			],
+		};
+	},
+	[ResponseIdentifiers.MODERATION_RECORD_CREATE](data) {
+		return {
+			embeds: Embeds(
+				[
+					{
+						author: {
+							name: "@" + data.author.username,
+							iconUrl: avatarUrl(data.author.id!, data.author.discriminator ?? "0", {
+								avatar: data.author.avatar ?? undefined,
+							}),
+						},
+						description: `## [User Record](https://roblox.com/users/${data.roblox.user.id})`,
+						thumbnail: {
+							url: data.roblox.avatar ?? process.env.URI_AVATAR_LOAD_ERROR,
+						},
+						fields: [
+							{
+								name: "User",
+								value:
+									"```ansi\n" +
+									chalk.black("@") +
+									chalk.white(data.roblox.user.name) +
+									"\n``````ansi\n" +
+									chalk.black("#") +
+									chalk.white(data.roblox.user.id) +
+									"\n```",
+								inline: true,
+							},
+							{
+								name: "Reason",
+								value: "```ansi\n" + chalk.white(data.input.reason) + "\n```",
+							},
+							{
+								name: "Action",
+								value: "```ansi\n" + formatAction(data.input.action!) + "\n```",
+								inline: true,
+							},
+							{
+								name: "Warnings",
+								value: "```ansi\n" + chalk.white(data.input.warningCount) + "\n```",
+								inline: true,
+							},
+						],
+					},
+				],
+				{
+					color: Number(process.env.SENTINEL_EMBED_COLOR_PRIMARY),
+				}
+			),
+			components: [
+				// TODO: add component(s) to manage records
 				{
 					type: MessageComponentTypes.ActionRow,
 					components: [component1.data],

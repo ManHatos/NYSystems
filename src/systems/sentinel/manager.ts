@@ -13,11 +13,17 @@ import command2 from "./commands/records.js";
 
 export const commands: SystemManager["commands"] = [command1, command2];
 
+// importing and exporting all component files
+import component1 from "./components/confirmLog.js";
+
+export const components: SystemManager["components"] = [component1];
+
 // additional system typings
 export type command1CacheData = {
 	input: {
 		reason: string;
 		action: RecordActions;
+		warningCount: number;
 	};
 	roblox: {
 		user: UsersSingle;
