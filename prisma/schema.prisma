@@ -43,9 +43,9 @@ type RecordInput {
 // user notes
 // merging to "Users" model with system NEXUS after development
 
-model Notes {
-  user      RobloxUser @id @map("_id")
-  message   String
-  createdAt DateTime   @default(now())
-  editedAt  DateTime?
-}
+// model Notes {
+//   user      RobloxUser @id @map("_id")
+//   message   String
+//   createdAt DateTime   @default(now())
+//   editedAt  DateTime?
+// }

@@ -1,27 +1,5 @@
 import "dotenv/config";
 
-/** send authenticated HTTP requests to supported Roblox APIs */
-export const request = {
-	users: function (
-		method: HTTPMethods,
-		endpoint: string,
-		options?: HTTPOptions,
-		version?: APIVersions,
-		authenticate?: boolean
-	) {
-		return makeRequest("users", method, endpoint, options, version, authenticate);
-	},
-	thumbnails: function (
-		method: HTTPMethods,
-		endpoint: string,
-		options?: HTTPOptions,
-		version?: APIVersions,
-		authenticate?: boolean
-	) {
-		return makeRequest("thumbnails", method, endpoint, options, version, authenticate);
-	},
-};
-
 // re-exporting supported Roblox APIs
 import { users } from "./roblox/users.js";
 
@@ -31,34 +9,53 @@ export const roblox = {
 	users,
 };
 
+/** send authenticated HTTP requests to supported Roblox APIs */
+export const request: Record<
+	"users" | "thumbnails",
+	(method: HTTPMethods, path: string, options?: HTTPOptions) => Promise<Response>
+> = {
+	users: function (method, path, options?) {
+		return sendRequest(RobloxAPIs.users, method, path, options);
+	},
+	thumbnails: function (method, path, options?) {
+		return sendRequest(RobloxAPIs.thumbnails, method, path, options);
+	},
+};
+
 /** send raw customizable requests to supported Roblox APIs */
-function makeRequest(
-	type: "users" | "thumbnails",
+function sendRequest(
+	api: RobloxAPIs,
 	method: HTTPMethods,
-	endpoint: string,
-	options?: HTTPOptions,
-	version: APIVersions = 1,
-	authenticate: boolean = true
-) {
+	path: string,
+	options: HTTPOptions = {}
+): Promise<Response> {
 	const request: Record<string, any> = {
 		method,
-		headers: {},
+		headers: {
+			COOKIE: `.ROBLOSECURITY=${process.env.ROBLOX_TOKEN}`,
+		},
 	};
-	let url =
-		"https://" + process.env["ROBLOX_API_" + type.toUpperCase()] + `/v${version}` + endpoint;
+	const endpoint = "https://" + api + `/v${options.version ?? 1}` + path;
 
-	if (authenticate) request.headers["COOKIE"] = `.ROBLOSECURITY=${process.env.ROBLOX_TOKEN}`;
-	if (options?.token) request.headers["X-CSRF-TOKEN"] = options.token;
-	if (options?.body) request.body = JSON.stringify(options.body);
-	if (options?.params) url = url + "?" + new URLSearchParams(options.params);
+	if (options.token) request.headers["X-CSRF-TOKEN"] = options.token;
+	if (options.body) request.body = JSON.stringify(options.body);
 
-	return fetch(url, request);
+	return fetch(
+		options.params ? endpoint.concat("?" + new URLSearchParams(options.params)) : endpoint,
+		request
+	);
 }
 
 type HTTPMethods = "GET" | "POST" | "PATCH" | "HEAD" | "PUT" | "DELETE";
+
 type HTTPOptions = {
-	body?: Record<string, any>;
+	version?: 1 | 2;
 	token?: string;
+	body?: Record<string, any>;
 	params?: Record<string, any>;
 };
-type APIVersions = 1 | 2;
+
+enum RobloxAPIs {
+	"users" = "users.roblox.com",
+	"thumbnails" = "thumbnails.roblox.com",
+}

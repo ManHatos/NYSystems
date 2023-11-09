@@ -51,8 +51,8 @@ systems.set(moderation);
 export const enum SystemCommandIdentifiers {
 	/** command used to create new moderations for a Roblox user */
 	"MODERATION_CREATE_NEW" = "log",
-	/** command used to view moderation history for a Roblox user */
-	"MODERATION_HISTORY_VIEW" = "records",
+	/** command used to view moderation history and information for a Roblox user */
+	"MODERATION_HISTORY_VIEW" = "lookup",
 }
 
 export const enum SystemAutocompleteIdentifiers {
@@ -74,6 +74,8 @@ export const enum ResponseIdentifiers {
 	"MODERATION_CREATE_CONFIRM_UPDATE",
 	/** a moderation record */
 	"MODERATION_RECORD_CREATE",
+	/** response sent following a `MODERATION_HISTORY_VIEW` interaction */
+	"MODERATION_HISTORY_LOOKUP",
 }
 
 export type SystemManager = {

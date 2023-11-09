@@ -9,10 +9,11 @@ import { RecordActions, datastore } from "../../../services/datastore.js";
 import autocomplete1 from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";
-import { UsersAvatar } from "../../../services/roblox/users.js";
+import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
 import { command1CacheData } from "../manager.js";
+import { extractUserAutocompleteID } from "../../../helpers/utility.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
@@ -46,28 +47,26 @@ export default {
 	async execute(interaction, values: [string, string, number]) {
 		await interaction.defer(true);
 
-		const robloxUser = await roblox.users.single(
-			values[0].startsWith(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX)
-				? Number(values[0].replace(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX, ""))
-				: values[0]
-		);
+		const robloxUser = await roblox.users.single(extractUserAutocompleteID(values[0]) || values[0]);
 		const robloxAvatar = await (async () => {
 			async function requestAvatar(
 				retried?: boolean
 			): Promise<UsersAvatar["imageUrl"] | undefined> {
-				return await roblox.users.avatars.full([robloxUser.id], "720x720").then(async (avatar) => {
-					if (avatar[0]?.state == "Completed") {
-						return avatar[0]?.imageUrl;
-					} else if (
-						!retried &&
-						(avatar[0]?.state == "Pending" ||
-							avatar[0]?.state == "TemporarilyUnavailable" ||
-							avatar[0]?.state == "Error")
-					) {
-						console.error("roblox avatar not ready");
-						return await requestAvatar(true);
-					}
-				});
+				return await roblox.users.avatars
+					.full([robloxUser.id], { size: "720x720" })
+					.then(async (avatar) => {
+						if (avatar[0]?.state == UsersAvatarStates.Completed) {
+							return avatar[0]?.imageUrl;
+						} else if (
+							!retried &&
+							(avatar[0]?.state == UsersAvatarStates.Pending ||
+								avatar[0]?.state == UsersAvatarStates.TemporarilyUnavailable ||
+								avatar[0]?.state == UsersAvatarStates.Error)
+						) {
+							console.error("roblox avatar not ready");
+							return await requestAvatar(true);
+						}
+					});
 			}
 			return requestAvatar();
 		})();
@@ -81,6 +80,9 @@ export default {
 						},
 					},
 				},
+			},
+			orderBy: {
+				createdAt: "desc",
 			},
 		});
 		const warningCount = userRecords.filter(

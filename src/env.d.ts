@@ -12,10 +12,6 @@ declare global {
 			// roblox
 			/** the `.ROBLOSECURITY` cookie for the system's Roblox bot account */
 			ROBLOX_TOKEN: string;
-			/** the full domain for the Roblox users API */
-			ROBLOX_API_USERS: string;
-			/** the full domain for the Roblox thumbnails API */
-			ROBLOX_API_THUMBNAILS: string;
 
 			// database
 			/** the full URL for the connection to the mongoDB database */

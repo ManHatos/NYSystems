@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionTypes } from "@discordeno/bot";
 import { SystemAutocompleteElement, SystemAutocompleteIdentifiers } from "../../systems.js";
 import { roblox } from "../../../services/roblox.js";
-import { throttle } from "../../../helpers/throttle.js";
+import { throttle } from "../../../helpers/utility.js";
 import { limitString } from "../../../helpers/utility.js";
 
 export const id = SystemAutocompleteIdentifiers.MODERATION_USER;
@@ -11,15 +11,11 @@ export default {
 		type: ApplicationCommandOptionTypes.String,
 		autocomplete: true,
 		name: id,
-		description:
-			'The user\'s Roblox username or identifier (ID), enter "#" to use an identifier (ID)',
+		description: "The Roblox user's username - type # to use an identifier (ID)",
 		required: true,
 	},
-	async execute(interaction, option) {
-		if (typeof option.value != "string") return;
-		const input = option.value;
-
-		if (input.length < 3 && !input.startsWith("#")) {
+	async execute(interaction, option: { value: string }) {
+		if (option.value.length < 3 && !option.value.startsWith("#")) {
 			return await interaction.respond({
 				choices: [],
 			});
@@ -27,9 +23,9 @@ export default {
 
 		throttle(["autocomplete", id, String(interaction.user.id)], String(interaction.id), 750)
 			.then(() => {
-				if (input.startsWith("#")) {
+				if (option.value.startsWith("#")) {
 					roblox.users
-						.single(Number(input.substring(1)))
+						.single(Number(option.value.substring(1)))
 						.then(async (user) => {
 							await interaction.respond({
 								choices: [
@@ -54,7 +50,7 @@ export default {
 						});
 				} else {
 					roblox.users
-						.search(input)
+						.search(option.value)
 						.then(async (response) => {
 							await interaction.respond({
 								choices: response.map((user) => {

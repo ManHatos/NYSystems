@@ -12,14 +12,14 @@ const color = {
 	},
 };
 
-function logTemplate(level: "info" | "warn" | "error" = "info", message: string) {
-	const logMessage = new Date().toISOString() + ` [${level.toUpperCase()}] ` + message;
-
-	console.log(color[level](logMessage));
-}
-
 export const log = {
 	info: (message: string): void => logTemplate("info", message),
 	warn: (message: string): void => logTemplate("warn", message),
 	error: (message: string): void => logTemplate("error", message),
 };
+
+function logTemplate(level: "info" | "warn" | "error" = "info", message: string) {
+	const logMessage = new Date().toISOString() + ` [${level.toUpperCase()}] ` + message;
+
+	console.log(color[level](logMessage));
+}

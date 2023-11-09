@@ -6,7 +6,7 @@ import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
 import { RecordActions } from "../../services/datastore.js";
 import { Records } from "@prisma/client";
 import chalk from "chalk";
-
+			
 export const response: SystemResponse<{
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]: {
 		author: User;
@@ -35,6 +35,19 @@ export const response: SystemResponse<{
 			warningCount: number;
 		};
 	};
+	[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]: {
+		author: User;
+		roblox: {
+			user: UsersSingle;
+			avatar?: UsersAvatar["imageUrl"];
+		};
+		warnings: {
+			week: number;
+			month: number;
+			total: number;
+		};
+		history: Partial<Records[]>;
+	};
 }> = {
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM](data) {
 		return {
@@ -53,16 +66,8 @@ export const response: SystemResponse<{
 						},
 						fields: [
 							{
-								name: "User",
-								value:
-									"```ansi\n" +
-									chalk.black("@") +
-									chalk.white(data.roblox.user.name) +
-									"\n``````ansi\n" +
-									chalk.black("#") +
-									chalk.white(data.roblox.user.id) +
-									"\n```",
-								inline: true,
+								name: "Roblox",
+								value: formatRobloxUser(data.roblox.user.name, data.roblox.user.id),
 							},
 							{
 								name: "Reason",
@@ -78,40 +83,7 @@ export const response: SystemResponse<{
 								value: "```ansi\n" + chalk.white(data.input.warningCount) + "\n```",
 								inline: true,
 							},
-							{
-								name: "**Recent Records**",
-								value: data.history.length < 1 ? ":mag: *no record history found*" : "** **",
-							},
-							...((history) => {
-								let fields: DiscordEmbedField[] = [];
-								let count = 1;
-
-								history.splice(5); // limit array length
-								history.forEach((record, index, array) => {
-									if (!record || index >= 5) return;
-									fields.push({
-										name: `\` ${count++} \` https://discord.com/channels/${
-											process.env.DISCORD_GUILD
-										}/${process.env.SENTINEL_CHANNEL}/${record.id}`,
-										value:
-											"**Created <t:" +
-											(new Date(record.createdAt).getTime() / 1000).toFixed(0) +
-											":R>**```ansi\n" +
-											chalk.white("Reason  ") +
-											chalk.black(record.input.reason) +
-											"\n``````ansi\n" +
-											chalk.white("Action  ") +
-											formatAction(record.input.action) +
-											"\n```",
-									});
-									if (index + 1 != array.length)
-										fields.push({
-											name: "** **",
-											value: "** **",
-										});
-								});
-								return fields;
-							})(data.history),
+							...formatHistory(data.history),
 						],
 					},
 				],
@@ -163,16 +135,8 @@ export const response: SystemResponse<{
 						},
 						fields: [
 							{
-								name: "User",
-								value:
-									"```ansi\n" +
-									chalk.black("@") +
-									chalk.white(data.roblox.user.name) +
-									"\n``````ansi\n" +
-									chalk.black("#") +
-									chalk.white(data.roblox.user.id) +
-									"\n```",
-								inline: true,
+								name: "Roblox",
+								value: formatRobloxUser(data.roblox.user.name, data.roblox.user.id),
 							},
 							{
 								name: "Reason",
@@ -204,7 +168,81 @@ export const response: SystemResponse<{
 			],
 		};
 	},
+	[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP](data) {
+		return {
+			embeds: Embeds([
+				{
+					author: {
+						name: "@" + data.author.username,
+						iconUrl: avatarUrl(data.author.id!, data.author.discriminator ?? "0", {
+							avatar: data.author.avatar ?? undefined,
+						}),
+					},
+					description: `## [User History & Information](https://roblox.com/users/${data.roblox.user.id})`,
+					thumbnail: {
+						url: data.roblox.avatar ?? process.env.URI_AVATAR_LOAD_ERROR,
+					},
+					fields: [
+						{
+							name: "Roblox",
+							value: formatRobloxUser(data.roblox.user.name, data.roblox.user.id, {
+								timestamp: data.roblox.user.created,
+								description: data.roblox.user.description,
+							}),
+						},
+						{
+							name: "Warnings",
+							value:
+								"```ansi\n" +
+								chalk.white("Last Week") +
+								"   " +
+								chalk.black(data.warnings.week) +
+								"\n" +
+								chalk.white("Last Month") +
+								"  " +
+								chalk.black(data.warnings.month) +
+								"\n" +
+								chalk.white("All-time") +
+								"    " +
+								chalk.black(data.warnings.total) +
+								"\n```",
+						},
+						...formatHistory(data.history, {
+							limit: 5,
+						}),
+					],
+				},
+			]),
+		};
+	},
 };
+
+function formatRobloxUser(
+	name: UsersSingle["name"],
+	id: UsersSingle["id"],
+	details?: {
+		timestamp: UsersSingle["created"];
+		description: UsersSingle["description"];
+	}
+): string {
+	return (
+		(details?.timestamp
+			? "Created <t:" + (Date.parse(details.timestamp) / 1000).toFixed() + ":R>\n"
+			: "") +
+		"```ansi\n" +
+		chalk.black("@") +
+		chalk.white(name) +
+		"\n``````ansi\n" +
+		chalk.black("#") +
+		chalk.white(id) +
+		"\n```" +
+		(details?.description
+			? (details.description.length == 0
+					? "```ansi\n" + chalk.yellow("no user description")
+					: "```txt\n" + details.description) + "\n```"
+			: "")
+	);
+}
 
 function formatAction(type: RecordActions): string {
 	switch (type) {
@@ -218,4 +256,49 @@ function formatAction(type: RecordActions): string {
 			return chalk.cyan(RecordActions[type]);
 		}
 	}
+}
+
+function formatHistory(
+	history: Partial<Records[]>,
+	options: {
+		limit: number;
+	} = {
+		limit: 3,
+	}
+) {
+	const fields: DiscordEmbedField[] = [
+		{
+			name: "**Record History**",
+			value: history.length < 1 ? ":mag: *no record history found*" : "** **",
+		},
+	];
+	let count = 1;
+
+	history.splice(options.limit); // limit array length
+	history.forEach((record, index, array) => {
+		if (!record) return;
+		fields.push({
+			name: `\` ${count++} \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${
+				process.env.SENTINEL_CHANNEL
+			}/${record.id}`,
+			value:
+				"**Created <t:" +
+				(+new Date(record.createdAt) / 1000).toFixed(0) +
+				":R>**\nby <@" +
+				record.author.id +
+				">\n```ansi\n" +
+				chalk.white("Reason  ") +
+				chalk.black(record.input.reason) +
+				"\n``````ansi\n" +
+				chalk.white("Action  ") +
+				formatAction(record.input.action) +
+				"\n```",
+		});
+		if (index + 1 != array.length)
+			fields.push({
+				name: "** **",
+				value: "** **",
+			});
+	});
+	return fields;
 }

@@ -40,7 +40,9 @@ export const users = {
 	/** return basic information about multiple roblox users using their usernames or identifiers */
 	multiple: async function (
 		query: string[] | number[],
-		banned: boolean = false
+		options?: {
+			excludeBanned?: boolean;
+		}
 	): Promise<UsersMulti[]> {
 		return new Promise(async (resolve, reject) => {
 			if (query.length == 0) return reject("no query provided");
@@ -49,7 +51,7 @@ export const users = {
 					.users("POST", "/usernames/users", {
 						body: {
 							usernames: query,
-							excludeBannedUsers: banned,
+							excludeBannedUsers: options?.excludeBanned ?? false,
 						},
 					})
 					.then(async (response) => {
@@ -66,7 +68,7 @@ export const users = {
 					.users("POST", "/users", {
 						body: {
 							userIds: query,
-							excludeBannedUsers: banned,
+							excludeBannedUsers: options?.excludeBanned ?? false,
 						},
 					})
 					.then(async (response) => {
@@ -82,14 +84,19 @@ export const users = {
 	},
 
 	/** search for a roblox user using their username, currently no support for pagination */
-	search: async function (query: string, limit: 10 | 25 | 50 | 100 = 10): Promise<UsersSearch[]> {
+	search: async function (
+		query: string,
+		options?: {
+			limit?: 10 | 25 | 50 | 100;
+		}
+	): Promise<UsersSearch[]> {
 		return new Promise((resolve, reject) => {
 			if (query.length < 3) return reject("query is too short");
 			roblox
 				.users("GET", "/users/search", {
 					params: {
 						keyword: query,
-						limit,
+						limit: options?.limit ?? 10,
 					},
 				})
 				.then(async (response) => {
@@ -107,30 +114,32 @@ export const users = {
 		/** return full avatars of multiple users using their identifiers */
 		full: async function (
 			query: number[],
-			size:
-				| "30x30"
-				| "48x48"
-				| "60x60"
-				| "75x75"
-				| "100x100"
-				| "110x110"
-				| "140x140"
-				| "150x150"
-				| "180x180"
-				| "250x250"
-				| "352x352"
-				| "420x420"
-				| "720x720" = "420x420",
-			circular: boolean = false
+			options?: {
+				size?:
+					| "30x30"
+					| "48x48"
+					| "60x60"
+					| "75x75"
+					| "100x100"
+					| "110x110"
+					| "140x140"
+					| "150x150"
+					| "180x180"
+					| "250x250"
+					| "352x352"
+					| "420x420"
+					| "720x720";
+				circular?: boolean;
+			}
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
 				roblox
 					.thumbnails("GET", "/users/avatar", {
 						params: {
 							userIds: String(query),
-							size: String(size),
+							size: String(options?.size ?? "420x420"),
 							format: "Png",
-							isCircular: String(circular),
+							isCircular: String(options?.circular ?? false),
 						},
 					})
 					.then(async (response) => {
@@ -147,26 +156,28 @@ export const users = {
 		/** return avatar busts (from chest and above) of multiple users using their identifiers */
 		bust: async function (
 			query: number[],
-			size:
-				| "48x48"
-				| "50x50"
-				| "60x60"
-				| "75x75"
-				| "100x100"
-				| "150x150"
-				| "180x180"
-				| "352x352"
-				| "420x420" = "420x420",
-			circular: boolean = false
+			options?: {
+				size?:
+					| "48x48"
+					| "50x50"
+					| "60x60"
+					| "75x75"
+					| "100x100"
+					| "150x150"
+					| "180x180"
+					| "352x352"
+					| "420x420";
+				circular?: boolean;
+			}
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
 				roblox
 					.thumbnails("GET", "/users/avatar-bust", {
 						params: {
 							userIds: query,
-							size: size,
+							size: options?.size ?? "420x420",
 							format: "Png",
-							isCircular: circular,
+							isCircular: options?.circular ?? false,
 						},
 					})
 					.then(async (response) => {
@@ -183,28 +194,30 @@ export const users = {
 		/** return avatar headshots of multiple users using their identifiers */
 		headshot: async function (
 			query: number[],
-			size:
-				| "48x48"
-				| "50x50"
-				| "60x60"
-				| "75x75"
-				| "100x100"
-				| "110x110"
-				| "150x150"
-				| "180x180"
-				| "352x352"
-				| "420x420"
-				| "720x720" = "420x420",
-			circular: boolean = false
+			options?: {
+				size?:
+					| "48x48"
+					| "50x50"
+					| "60x60"
+					| "75x75"
+					| "100x100"
+					| "110x110"
+					| "150x150"
+					| "180x180"
+					| "352x352"
+					| "420x420"
+					| "720x720";
+				circular?: boolean;
+			}
 		): Promise<UsersAvatar[]> {
 			return new Promise(async (resolve, reject) => {
 				roblox
 					.thumbnails("GET", "/users/avatar-headshot", {
 						params: {
 							userIds: query,
-							size: size,
+							size: options?.size ?? "420x420",
 							format: "Png",
-							isCircular: circular,
+							isCircular: options?.circular ?? false,
 						},
 					})
 					.then(async (response) => {
@@ -241,9 +254,18 @@ export type UsersMulti = {
 	displayName: string;
 };
 
+export const enum UsersAvatarStates {
+	Error = "Error",
+	Completed = "Completed",
+	InReview = "InReview",
+	Pending = "Pending",
+	Blocked = "Blocked",
+	TemporarilyUnavailable = "TemporarilyUnavailable",
+}
+
 export type UsersAvatar = {
 	targetId: number;
-	state: "Error" | "Completed" | "InReview" | "Pending" | "Blocked" | "TemporarilyUnavailable";
+	state: UsersAvatarStates;
 	imageUrl: string;
 	version: string;
 };

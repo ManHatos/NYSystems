@@ -24,9 +24,12 @@ export default {
 		await interaction.defer(true);
 
 		if (!interaction.message) return;
-		const cached = await cachestore.getDel(
-			["cache", interaction.user.id, interaction.message.id].join("/")
-		);
+		const cached = await (async () => {
+			const cacheKey = ["cache", interaction.user.id, interaction.message!.id].join("/");
+			const data = cachestore.get(cacheKey);
+			await cachestore.del(cacheKey);
+			return data;
+		})();
 
 		if (!cached) return;
 		const data = JSON.parse(cached) as command1CacheData;
@@ -39,8 +42,7 @@ export default {
 				...response[ResponseIdentifiers.MODERATION_RECORD_CREATE]({
 					author: interaction.user,
 					input: {
-						reason: data.input.reason,
-						action: data.input.action,
+						...data.input,
 						warningCount:
 							data.input.warningCount + (data.input.action == RecordActions.Warning ? 1 : 0),
 					},
