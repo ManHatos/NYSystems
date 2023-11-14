@@ -7,10 +7,9 @@
 	"scripts": {
 		"p-gen": "npx prisma generate",
 		"p-sync": "npx prisma db push",
-		"clean": "rimraf dist/",
+		"clean": "rimraf dist/ -G dist",
 		"build": "npm run clean && tsc",
-		"start": "npm run p-gen && npm run build && node dist/",
-		"test": "npm run build && node dist/testbench.js"
+		"start": "npm run p-gen && npm run build && node dist/"
 	},
 	"devDependencies": {
 		"@types/node": "^20.8.9",
@@ -19,7 +18,7 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"@discordeno/bot": "^19.0.0-next.eec2927",
+		"@discordeno/bot": "^19.0.0-next.1545f01",
 		"@prisma/client": "^5.5.2",
 		"chalk": "^5.3.0",
 		"dotenv": "^16.3.1",
