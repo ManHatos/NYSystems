@@ -8,7 +8,7 @@
 		"p-gen": "npx prisma generate",
 		"p-sync": "npx prisma db push",
 		"clean": "rimraf dist/ -G dist",
-		"build": "npm run clean && tsc",
+		"build": "npm run clean && npx tsc",
 		"start": "npm run p-gen && npm run build && node dist/"
 	},
 	"devDependencies": {
