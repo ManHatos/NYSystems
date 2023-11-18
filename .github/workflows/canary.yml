@@ -1,0 +1,30 @@
+name: Auto-Deploy Canary Systems
+
+# Controls when the action will run 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ "canary" ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:       
+    - name: Deploy using ssh
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT }}
+        script: |
+          cd /home/arod/Applications/NYSystems/canary
+          git fetch --all
+          git reset --hard origin/canary
+          npm install
+          pm2 restart 'NYCanary'
