@@ -23,7 +23,7 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         port: ${{ secrets.VPS_PORT }}
         script: |
-          cd /home/arod/Applications/NYSystems
+          cd /home/arod/Applications/NYSystems/main
           git fetch --all
           git reset --hard origin/main
           npm install
