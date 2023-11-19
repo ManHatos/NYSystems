@@ -1,8 +1,13 @@
 # dependencies
 node_modules/
 
-# local development
-.env
+# local
 dist/
 .vscode
 testbench.ts
+
+# environment
+.env*
+!.env.project
+!.env.vault
+.flaskenv*
