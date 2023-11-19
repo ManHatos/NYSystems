@@ -1,50 +1,27 @@
 import "dotenv/config";
-import { GATEWAY as gateway, REST as rest } from "./services/discord.js";
+import { discord } from "./services/discord.js";
 import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
-import { modules } from "./modules/modules.js";
-import {
-	ApplicationCommandTypes,
-	InteractionTypes,
-	createBot,
-	logger as DiscordenoLogger,
-} from "@discordeno/bot";
-
-/** main bot object, handles all incoming and outgoing requests to and from Discord */
-export const BOT = createBot({
-	token: process.env.TOKEN as string,
-	events: {
-		async interactionCreate(interaction) {
-			// application commands handler
-			if (interaction.type == InteractionTypes.ApplicationCommand) {
-				if (interaction.data?.type == ApplicationCommandTypes.ChatInput) {
-					modules.commands.has(interaction.data?.name)
-						? modules.commands.get(interaction.data!.name)!.execute(interaction)
-						: log.error(`Unknown application command "/${interaction.data?.name ?? "unknown"}"`);
-				}
-			} else if (interaction.type == InteractionTypes.ApplicationCommandAutocomplete) {
-				const focusedOption = interaction.data?.options?.find((option) => option.focused);
-				console.log("ac data:", interaction.data);
-				modules.autocomplete.has(focusedOption?.name)
-					? modules.autocomplete.get(focusedOption!.name)!.execute(interaction)
-					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "unknown"}"`);
-			}
-		},
-	},
-	gateway,
-	rest,
-});
+import { systems } from "./systems/systems.js";
+import { logger as DiscordenoLogger } from "@discordeno/bot";
 
 // disable default logger
 DiscordenoLogger.setLevel(100 as number);
 
-// set desired interaction properties
-for (const key in BOT.transformers.desiredProperties.interaction) {
-	BOT.transformers.desiredProperties.interaction[
-		key as keyof typeof BOT.transformers.desiredProperties.interaction
-	] = true;
-}
+// set desired properties
+((object) => {
+	function fn(object: Record<string, any>) {
+		for (const [key, property] of Object.entries(object)) {
+			if (typeof property === "object" && property) {
+				fn(property);
+				continue;
+			}
+			object[key] = true;
+		}
+	}
+	fn(object);
+})(discord.transformers.desiredProperties);
 
 // initiate datastore service
 (async () => {
@@ -62,18 +39,21 @@ for (const key in BOT.transformers.desiredProperties.interaction) {
 
 // load application commands
 (async () => {
+	// check whether loading commands was requested when starting system
+	if (!process.argv.includes("loadCmd")) return;
 	log.info("Loading application commands...");
-	await BOT.rest
+	await discord.rest
 		.upsertGuildApplicationCommands(
-			process.env.GUILD_ID as string,
-			modules.commands.data.map((element) => element.data)
+			process.env.DISCORD_GUILD,
+			systems.commands.data.map((element) => element.data)
 		)
 		.then((response) => log.info("Successfully loaded commands\n" + response))
 		.catch((error) => log.error("Error loading commands\n" + JSON.stringify(error)));
 })();
 
 // initiate gateway connection
-await BOT.start();
+await discord.start();
 
-process.on("uncaughtException", (e) => console.log("unhandled exception", e));
-process.on("unhandledRejection", (e) => console.log("unhandled rejection", e));
+// handle fatal process events
+process.on("uncaughtException", (e) => console.log("unhandled exception: ", e));
+process.on("unhandledRejection", (e) => console.log("unhandled rejection: ", e));
