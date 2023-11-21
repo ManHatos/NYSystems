@@ -2,6 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import { log } from "../helpers/logger.js";
 
 export const datastore = new PrismaClient({
+	datasources: {
+		db: {
+			url: process.env.DATABASE_URL,
+		},
+	},
 	log: [
 		{
 			level: "info",
