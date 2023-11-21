@@ -22,7 +22,7 @@ type RobloxUser {
 // moderation records data
 
 model Records {
-  id        String         @id @map("_id")
+  id        BigInt         @id @map("_id")
   author    DiscordUser
   editors   RecordEditor[]
   input     RecordInput
