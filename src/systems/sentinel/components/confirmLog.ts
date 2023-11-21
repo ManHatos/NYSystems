@@ -54,7 +54,7 @@ export default {
 				await datastore.records
 					.create({
 						data: {
-							id: String(message.id),
+							id: BigInt(message.id),
 							author: {
 								id: interaction.user.id,
 							},
