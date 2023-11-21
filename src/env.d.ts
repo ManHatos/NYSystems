@@ -24,6 +24,8 @@ declare global {
 			// cache
 			/** the full URL for the connection to the redis cache */
 			CACHE_URL: string;
+			/** the password for authenticating into redis */
+			CACHE_PASS: string;
 			/** the host of the cache */
 			CACHE_HOST: string;
 			/** the port of the cache */

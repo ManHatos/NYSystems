@@ -3,6 +3,7 @@ import { createClient } from "redis";
 
 export const cachestore = createClient({
 	url: process.env.CACHE_URL,
+	password: process.env.CACHE_PASS
 });
 
 cachestore.on("connect", () => console.log("redis connecting"));
