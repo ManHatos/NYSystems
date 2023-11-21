@@ -6,7 +6,7 @@ import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
 import { RecordActions } from "../../services/datastore.js";
 import { Records } from "@prisma/client";
 import chalk from "chalk";
-			
+
 export const response: SystemResponse<{
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]: {
 		author: User;
@@ -110,9 +110,12 @@ export const response: SystemResponse<{
 				{
 					type: MessageComponentTypes.ActionRow,
 					components: [
-						Object.assign(component1.data, {
-							disabled: true,
-						}),
+						Object.assign(
+							{ ...component1.data },
+							{
+								disabled: true,
+							}
+						),
 					],
 				},
 			],
