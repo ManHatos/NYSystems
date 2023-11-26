@@ -87,21 +87,45 @@ export const users = {
 	search: async function (
 		query: string,
 		options?: {
-			limit?: 10 | 25 | 50 | 100;
+			limit?: number;
+			start?: number;
 		}
 	): Promise<UsersSearch[]> {
 		return new Promise((resolve, reject) => {
 			if (query.length < 3) return reject("query is too short");
 			roblox
-				.users("GET", "/users/search", {
+				.core("GET", "/search/users/results", {
 					params: {
 						keyword: query,
-						limit: options?.limit ?? 10,
+						maxRows: options?.limit ?? 10,
 					},
 				})
 				.then(async (response) => {
 					const body = await response.json();
-					if (response.ok) resolve(body?.data);
+					if (response.ok)
+						resolve(
+							body?.UserSearchResults.map(
+								(user: {
+									UserId: number;
+									Name: string;
+									DisplayName: string;
+									Blurb?: string;
+									IsOnline: boolean;
+									UserProfilePageUrl: string;
+									HasVerifiedBadge: boolean;
+								}): UsersSearch => {
+									return {
+										id: user.UserId,
+										name: user.Name,
+										displayName: user.DisplayName,
+										description: user.Blurb,
+										profilePath: user.UserProfilePageUrl,
+										online: user.IsOnline,
+										hasVerifiedBadge: user.HasVerifiedBadge,
+									};
+								}
+							) ?? []
+						);
 					else if (response.status == 400 && body?.errors[0]?.code == 2)
 						reject("query was filtered");
 					else reject("unknown request error");
@@ -271,9 +295,11 @@ export type UsersAvatar = {
 };
 
 export type UsersSearch = {
-	previousUsernames: string[];
-	hasVerifiedBadge: boolean;
 	id: number;
 	name: string;
 	displayName: string;
+	description?: string;
+	online: boolean;
+	profilePath: string;
+	hasVerifiedBadge: boolean;
 };

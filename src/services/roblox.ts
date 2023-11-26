@@ -11,7 +11,7 @@ export const roblox = {
 
 /** send authenticated HTTP requests to supported Roblox APIs */
 export const request: Record<
-	"users" | "thumbnails",
+	"users" | "thumbnails" | "core",
 	(method: HTTPMethods, path: string, options?: HTTPOptions) => Promise<Response>
 > = {
 	users: function (method, path, options?) {
@@ -19,6 +19,9 @@ export const request: Record<
 	},
 	thumbnails: function (method, path, options?) {
 		return sendRequest(RobloxAPIs.thumbnails, method, path, options);
+	},
+	core: function (method, path, options?) {
+		return sendRequest(RobloxAPIs.core, method, path, { ...options, version: 0 });
 	},
 };
 
@@ -35,7 +38,8 @@ function sendRequest(
 			COOKIE: `.ROBLOSECURITY=${process.env.ROBLOX_TOKEN}`,
 		},
 	};
-	const endpoint = "https://" + api + `/v${options.version ?? 1}` + path;
+	const endpoint =
+		"https://" + api + (options.version != 0 ? `/v${options.version ?? 1}` : "") + path;
 
 	if (options.token) request.headers["X-CSRF-TOKEN"] = options.token;
 	if (options.body) request.body = JSON.stringify(options.body);
@@ -49,7 +53,7 @@ function sendRequest(
 type HTTPMethods = "GET" | "POST" | "PATCH" | "HEAD" | "PUT" | "DELETE";
 
 type HTTPOptions = {
-	version?: 1 | 2;
+	version?: 0 | 1 | 2;
 	token?: string;
 	body?: Record<string, any>;
 	params?: Record<string, any>;
@@ -58,4 +62,5 @@ type HTTPOptions = {
 enum RobloxAPIs {
 	"users" = "users.roblox.com",
 	"thumbnails" = "thumbnails.roblox.com",
+	"core" = "www.roblox.com",
 }

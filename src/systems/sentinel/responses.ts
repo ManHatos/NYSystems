@@ -5,7 +5,7 @@ import component1 from "./components/confirmLog.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
 import { RecordActions } from "../../services/datastore.js";
 import { Records } from "@prisma/client";
-import chalk from "chalk";
+import color from "chalk";
 
 export const response: SystemResponse<{
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]: {
@@ -71,7 +71,7 @@ export const response: SystemResponse<{
 							},
 							{
 								name: "Reason",
-								value: "```ansi\n" + chalk.white(data.input.reason) + "\n```",
+								value: "```ansi\n" + color.white(data.input.reason) + "\n```",
 							},
 							{
 								name: "Action",
@@ -80,7 +80,7 @@ export const response: SystemResponse<{
 							},
 							{
 								name: "Warnings",
-								value: "```ansi\n" + chalk.white(data.input.warningCount) + "\n```",
+								value: "```ansi\n" + color.white(data.input.warningCount) + "\n```",
 								inline: true,
 							},
 							...formatHistory(data.history),
@@ -109,14 +109,7 @@ export const response: SystemResponse<{
 			components: [
 				{
 					type: MessageComponentTypes.ActionRow,
-					components: [
-						Object.assign(
-							{ ...component1.data },
-							{
-								disabled: true,
-							}
-						),
-					],
+					components: [{ ...component1.data, disabled: true }],
 				},
 			],
 		};
@@ -143,7 +136,7 @@ export const response: SystemResponse<{
 							},
 							{
 								name: "Reason",
-								value: "```ansi\n" + chalk.white(data.input.reason) + "\n```",
+								value: "```ansi\n" + color.white(data.input.reason) + "\n```",
 							},
 							{
 								name: "Action",
@@ -152,7 +145,7 @@ export const response: SystemResponse<{
 							},
 							{
 								name: "Warnings",
-								value: "```ansi\n" + chalk.white(data.input.warningCount) + "\n```",
+								value: "```ansi\n" + color.white(data.input.warningCount) + "\n```",
 								inline: true,
 							},
 						],
@@ -197,17 +190,17 @@ export const response: SystemResponse<{
 							name: "Warnings",
 							value:
 								"```ansi\n" +
-								chalk.white("Last Week") +
+								color.white("Last Week") +
 								"   " +
-								chalk.black(data.warnings.week) +
+								color.black(data.warnings.week) +
 								"\n" +
-								chalk.white("Last Month") +
+								color.white("Last Month") +
 								"  " +
-								chalk.black(data.warnings.month) +
+								color.black(data.warnings.month) +
 								"\n" +
-								chalk.white("All-time") +
+								color.white("All-time") +
 								"    " +
-								chalk.black(data.warnings.total) +
+								color.black(data.warnings.total) +
 								"\n```",
 						},
 						...formatHistory(data.history, {
@@ -233,15 +226,15 @@ function formatRobloxUser(
 			? "Created <t:" + (Date.parse(details.timestamp) / 1000).toFixed() + ":R>\n"
 			: "") +
 		"```ansi\n" +
-		chalk.black("@") +
-		chalk.white(name) +
+		color.black("@") +
+		color.white(name) +
 		"\n``````ansi\n" +
-		chalk.black("#") +
-		chalk.white(id) +
+		color.black("#") +
+		color.white(id) +
 		"\n```" +
 		(details?.description
 			? (details.description.length == 0
-					? "```ansi\n" + chalk.yellow("no user description")
+					? "```ansi\n" + color.yellow("no user description")
 					: "```txt\n" + details.description) + "\n```"
 			: "")
 	);
@@ -250,13 +243,13 @@ function formatRobloxUser(
 function formatAction(type: RecordActions): string {
 	switch (type) {
 		case RecordActions.Ban: {
-			return chalk.red(RecordActions[type]);
+			return color.red(RecordActions[type]);
 		}
 		case RecordActions.Kick: {
-			return chalk.yellow(RecordActions[type]);
+			return color.yellow(RecordActions[type]);
 		}
 		case RecordActions.Warning: {
-			return chalk.cyan(RecordActions[type]);
+			return color.cyan(RecordActions[type]);
 		}
 	}
 }
@@ -290,10 +283,10 @@ function formatHistory(
 				":R>**\nby <@" +
 				record.author.id +
 				">\n```ansi\n" +
-				chalk.white("Reason  ") +
-				chalk.black(record.input.reason) +
+				color.white("Reason  ") +
+				color.black(record.input.reason) +
 				"\n``````ansi\n" +
-				chalk.white("Action  ") +
+				color.white("Action  ") +
 				formatAction(record.input.action) +
 				"\n```",
 		});
