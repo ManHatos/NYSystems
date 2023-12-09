@@ -1,8 +1,10 @@
-import { ApplicationCommandOptionTypes } from "@discordeno/bot";
+import { ApplicationCommandOptionTypes, Interaction } from "@discordeno/bot";
 import { SystemAutocompleteElement, SystemAutocompleteIdentifiers } from "../../systems.js";
 import { roblox } from "../../../services/roblox.js";
 import { throttle } from "../../../helpers/utility.js";
 import { limitString } from "../../../helpers/utility.js";
+import { UsersSingle } from "../../../services/roblox/users.js";
+import { ErrorCodes, SystemError } from "../../../helpers/errors.js";
 
 export const id = SystemAutocompleteIdentifiers.MODERATION_USER;
 export default {
@@ -16,55 +18,62 @@ export default {
 	},
 	async execute(interaction, option: { value: string }) {
 		if (option.value.length < 3 && !option.value.startsWith("#")) {
-			return await interaction.respond({
-				choices: [],
-			});
+			return await defaultResponse(interaction);
 		}
 
 		throttle(["autocomplete", id, String(interaction.user.id)], String(interaction.id), 750)
 			.then(() => {
-				if (option.value.startsWith("#")) {
+				if (option.value.startsWith("#"))
 					roblox.users
 						.single(Number(option.value.substring(1)))
 						.then(async (user) => {
 							await interaction.respond({
-								choices: [
-									{
-										name:
-											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX + String(user.id),
-									},
-								],
+								choices: [formatOption(user)],
 							});
 						})
-						.catch(async (e) => {
-							console.log("user specific request failed: ", e);
+						.catch(async (error) => {
 							if (
-								typeof e == "string" &&
-								(e.includes("does not exist") || e == "invalid identifier")
+								error instanceof SystemError &&
+								(error.code == ErrorCodes.ROBLOX_USER_NOT_FOUND ||
+									error.code == ErrorCodes.ROBLOX_USER_INVALID ||
+									error.code == ErrorCodes.ROBLOX_USER_TOO_SHORT)
 							) {
-								await interaction.respond({
-									choices: [],
-								});
+								await defaultResponse(interaction);
 							}
+							console.log("user specific request failed: ", error);
 						});
-				} else {
+				else
 					roblox.users
 						.search(option.value)
 						.then(async (response) => {
 							await interaction.respond({
-								choices: response.map((user) => {
-									return {
-										name:
-											limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
-										value: process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX + String(user.id),
-									};
-								}),
+								choices: response.map(formatOption),
 							});
 						})
-						.catch((e) => console.log("user search request failed: ", e));
-				}
+						.catch(async (error) => {
+							if (
+								error instanceof SystemError &&
+								(error.code == ErrorCodes.ROBLOX_USER_NOT_FOUND ||
+									error.code == ErrorCodes.ROBLOX_USER_TOO_SHORT)
+							) {
+								await defaultResponse(interaction);
+							}
+							console.log("user search request failed: ", error);
+						});
 			})
-			.catch(() => console.error("overwritten"));
+			.catch(console.error);
 	},
 } as SystemAutocompleteElement;
+
+function formatOption(user: Pick<UsersSingle, "displayName" | "name" | "id">) {
+	return {
+		name: limitString(user.displayName, 40) + " (@" + limitString(user.name, 45) + ")",
+		value: process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX + String(user.id),
+	};
+}
+
+async function defaultResponse(interaction: Interaction): Promise<void> {
+	await interaction.respond({
+		choices: [],
+	});
+}

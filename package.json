@@ -8,8 +8,10 @@
 		"p-gen": "npx prisma generate",
 		"p-sync": "npx prisma db push",
 		"clean": "rimraf dist/ -G dist",
-		"build": "npm run clean && npx tsc",
-		"start": "npm run p-gen && npm run build && node dist/"
+		"build": "npm run p-gen && npm run clean && npx tsc",
+		"start": "npm run build && node dist/",
+		"test": "npm run build && node dist/play.local.js",
+		"bm": "npm run build && node dist/benchmark.local.js"
 	},
 	"dependencies": {
 		"@discordeno/bot": "^19.0.0-next.7aed376",

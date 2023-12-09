@@ -101,7 +101,7 @@ export const response: SystemResponse<{
 	},
 	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]() {
 		return {
-			content: "your record has been created successfully",
+			content: process.env.EMOJI_SUCCESS + " **Successfully submitted**",
 		};
 	},
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]() {
@@ -156,11 +156,7 @@ export const response: SystemResponse<{
 				}
 			),
 			components: [
-				// TODO: add component(s) to manage records
-				{
-					type: MessageComponentTypes.ActionRow,
-					components: [component1.data],
-				},
+				//  TODO: add component(s) to manage records
 			],
 		};
 	},
@@ -275,7 +271,7 @@ function formatHistory(
 		if (!record) return;
 		fields.push({
 			name: `\` ${count++} \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${
-				process.env.SENTINEL_CHANNEL
+				process.env.SENTINEL_CHANNEL_ID
 			}/${record.id}`,
 			value:
 				"**Created <t:" +

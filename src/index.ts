@@ -4,10 +4,10 @@ import { datastore } from "./services/datastore.js";
 import { cachestore } from "./services/cachestore.js";
 import { log } from "./helpers/logger.js";
 import { systems } from "./systems/systems.js";
-import { logger as DiscordenoLogger } from "@discordeno/bot";
+import { logger as DDenoLogger } from "@discordeno/bot";
 
 // disable default logger
-DiscordenoLogger.setLevel(100 as number);
+DDenoLogger.setLevel(100 as number);
 
 // set desired properties
 ((object) => {
@@ -25,21 +25,21 @@ DiscordenoLogger.setLevel(100 as number);
 
 // initiate datastore service
 (async () => {
-	const L1 = performance.now();
-	await datastore.$connect();
-	log.info(`Datastore took ${(performance.now() - L1).toFixed(5)} ms`);
+	const T1 = performance.now();
+	await datastore.connect();
+	log.info(`Datastore took ${(performance.now() - T1).toFixed(5)} ms`);
 })();
 
 // initiate cachestore service
 (async () => {
-	const L1 = performance.now();
-	await cachestore.connect();
-	log.info(`Cachestore took ${(performance.now() - L1).toFixed(5)} ms`);
+	const T1 = performance.now();
+	await cachestore.core.connect();
+	log.info(`Cachestore took ${(performance.now() - T1).toFixed(5)} ms`);
 })();
 
 // load application commands
 (async () => {
-	// check whether loading commands was requested when starting system
+	// check whether loading commands was requested
 	if (!process.argv.includes("loadCmd")) return;
 	log.info("Loading application commands...");
 	await discord.rest

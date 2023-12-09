@@ -9,6 +9,7 @@ import { command1CacheData } from "../manager.js";
 import { discord } from "../../../services/discord.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
+import { SystemError } from "../../../helpers/errors.js";
 
 export const id = SystemComponentIdentifiers.MODERATION_LOG_CONFIRM;
 export default {
@@ -16,29 +17,29 @@ export default {
 	data: {
 		customId: id,
 		type: MessageComponentTypes.Button,
-		// emoji: , TODO: add emoji
-		label: "Create Record",
+		emoji: {
+			id: 1183058928720953395n,
+			name: "addRecord",
+		},
+		label: "Submit Record",
 		style: ButtonStyles.Danger,
 	},
 	async execute(interaction) {
 		await interaction.defer(true);
 
-		if (!interaction.message) return;
-		const cached = await (async () => {
-			const cacheKey = ["cache", interaction.user.id, interaction.message!.id].join("/");
-			const data = cachestore.get(cacheKey);
-			await cachestore.del(cacheKey);
-			return data;
-		})();
+		try {
+			if (!interaction.message) return;
+			const cached = await (async () => {
+				const cacheKey = ["cache", interaction.user.id, interaction.message!.id].join("/");
+				const data = cachestore.get(cacheKey);
+				await cachestore.delete(cacheKey);
+				return data;
+			})();
 
-		if (!cached) return;
-		const data = JSON.parse(cached) as command1CacheData;
+			if (!cached) return;
+			const data = JSON.parse(cached) as command1CacheData;
 
-		await discord.rest
-			.executeWebhook(process.env.SENTINEL_WEBHOOK_ID, process.env.SENTINEL_WEBHOOK_TOKEN, {
-				// username: '', TODO: support for webhook custom profiles
-				// avatarUrl: '',
-				wait: true,
+			const recordMessage = await discord.rest.sendMessage(process.env.SENTINEL_CHANNEL_ID, {
 				...response[ResponseIdentifiers.MODERATION_RECORD_CREATE]({
 					author: interaction.user,
 					input: {
@@ -48,42 +49,36 @@ export default {
 					},
 					roblox: data.roblox,
 				}),
-			})
-			.then(async (message) => {
-				if (!message) return await interaction.edit("error214");
-				await datastore.records
-					.create({
-						data: {
-							id: BigInt(message.id),
-							author: {
-								id: interaction.user.id,
-							},
-							input: {
-								user: {
-									id: data.roblox.user.id,
-								},
-								reason: data.input.reason,
-								action: data.input.action,
-							},
-						},
-					})
-					.then(async () => {
-						await interaction.edit(
-							response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]()
-						);
-						await discord.rest.sendFollowupMessage(interaction.token, {
-							...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
-							flags: MessageFlags.Ephemeral,
-						});
-					})
-					.catch(async (error) => {
-						console.error("db record create failed: ", error);
-						await interaction.edit("error4");
-					});
-			})
-			.catch(async (error) => {
-				console.error("record creation failed: ", error);
-				await interaction.edit("error231");
 			});
+
+			await datastore.records.create({
+				data: {
+					id: BigInt(recordMessage.id),
+					author: {
+						id: interaction.user.id,
+					},
+					input: {
+						user: {
+							id: data.roblox.user.id,
+						},
+						reason: data.input.reason,
+						action: data.input.action,
+					},
+				},
+			});
+
+			await interaction.edit(response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]());
+			await discord.rest.sendFollowupMessage(interaction.token, {
+				...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
+				flags: MessageFlags.Ephemeral,
+			});
+		} catch (error) {
+			if (error instanceof SystemError) {
+				console.log("systemError [confirmLog]: ", error);
+				await interaction.edit(error.message);
+			} else {
+				await interaction.edit(new SystemError().message);
+			}
+		}
 	},
 } as SystemComponentElement;

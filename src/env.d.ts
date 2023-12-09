@@ -9,6 +9,14 @@ declare global {
 			/** default color used instead of undefined colors in embeds */
 			DISCORD_EMBED_COLOR: string;
 
+			// emoji
+			/** emoji sent with user-caused errors */
+			EMOJI_ERROR_USER: string;
+			/** emoji sent with sytem-level errors */
+			EMOJI_ERROR_SYSTEM: string;
+			/** emoji sent with successful responses */
+			EMOJI_SUCCESS: string;
+
 			// roblox
 			/** the `.ROBLOSECURITY` cookie for the system's Roblox bot account */
 			ROBLOX_TOKEN: string;
@@ -43,7 +51,7 @@ declare global {
 			/** webhook identifier used by sentinal for user records */
 			SENTINEL_WEBHOOK_ID: string;
 			/** channel identifier used by sentinel for user records */
-			SENTINEL_CHANNEL: string;
+			SENTINEL_CHANNEL_ID: string;
 			/** primary embed color used be sentinel in most messages */
 			SENTINEL_EMBED_COLOR_PRIMARY: string;
 			/** "preview" embed color used be sentinel in record previews */

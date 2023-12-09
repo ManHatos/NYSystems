@@ -4,7 +4,7 @@ node_modules/
 # local
 dist/
 .vscode
-testbench.ts
+*.local.ts
 
 # environment
 .env*

@@ -14,6 +14,7 @@ import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
 import { command1CacheData } from "../manager.js";
 import { extractUserAutocompleteID } from "../../../helpers/utility.js";
+import { SystemError } from "../../../helpers/errors.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
@@ -47,50 +48,58 @@ export default {
 	async execute(interaction, values: [string, string, number]) {
 		await interaction.defer(true);
 
-		const robloxUser = await roblox.users.single(extractUserAutocompleteID(values[0]) || values[0]);
-		const robloxAvatar = await (async () => {
-			async function requestAvatar(
-				retried?: boolean
-			): Promise<UsersAvatar["imageUrl"] | undefined> {
-				return await roblox.users.avatars
-					.full([robloxUser.id], { size: "720x720" })
-					.then(async (avatar) => {
-						if (avatar[0]?.state == UsersAvatarStates.Completed) {
-							return avatar[0]?.imageUrl;
-						} else if (
-							!retried &&
-							(avatar[0]?.state == UsersAvatarStates.Pending ||
-								avatar[0]?.state == UsersAvatarStates.TemporarilyUnavailable ||
-								avatar[0]?.state == UsersAvatarStates.Error)
-						) {
-							console.error("roblox avatar not ready");
-							return await requestAvatar(true);
-						}
-					});
-			}
-			return requestAvatar();
-		})();
+		try {
+			values[1] == values[1].replaceAll("`", "") || "<invalid reason>";
 
-		const userRecords = await datastore.records.findMany({
-			where: {
-				input: {
-					is: {
-						user: {
-							id: robloxUser.id,
+			const robloxUser = await roblox.users.single(
+				extractUserAutocompleteID(values[0]) || values[0]
+			);
+			const robloxAvatar = await (async () => {
+				async function requestAvatar(
+					retried?: boolean
+				): Promise<UsersAvatar["imageUrl"] | undefined> {
+					return await roblox.users.avatars
+						.full([robloxUser.id], { size: "720x720" })
+						.then(async (avatar) => {
+							if (avatar[0]?.state == UsersAvatarStates.Completed) {
+								return avatar[0]?.imageUrl;
+							} else if (
+								!retried &&
+								(avatar[0]?.state == UsersAvatarStates.Pending ||
+									avatar[0]?.state == UsersAvatarStates.TemporarilyUnavailable ||
+									avatar[0]?.state == UsersAvatarStates.Error)
+							) {
+								console.error("roblox avatar error");
+								return await requestAvatar(true);
+							}
+						})
+						.catch((error) => {
+							console.error(error);
+							return undefined;
+						});
+				}
+				return requestAvatar();
+			})();
+
+			const userRecords = await datastore.records.findMany({
+				where: {
+					input: {
+						is: {
+							user: {
+								id: robloxUser.id,
+							},
 						},
 					},
 				},
-			},
-			orderBy: {
-				createdAt: "desc",
-			},
-		});
-		const warningCount = userRecords.filter(
-			(record) => record.input.action == RecordActions.Warning
-		).length;
+				orderBy: {
+					createdAt: "desc",
+				},
+			});
+			const warningCount = userRecords.filter(
+				(record) => record.input.action == RecordActions.Warning
+			).length;
 
-		await interaction
-			.edit(
+			await interaction.edit(
 				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
 					author: interaction.user,
 					history: userRecords,
@@ -104,24 +113,33 @@ export default {
 						avatar: robloxAvatar,
 					},
 				})
-			)
-			.then(async () => {
-				const response = await discord.rest.getOriginalInteractionResponse(interaction.token);
-				await cachestore.setEx(
-					["cache", interaction.user.id, response.id].join("/"),
-					16 * 60,
-					JSON.stringify({
-						input: {
-							reason: values[1],
-							action: values[2],
-							warningCount,
-						},
-						roblox: {
-							user: robloxUser,
-							avatar: robloxAvatar,
-						},
-					} as command1CacheData)
-				);
-			});
+			);
+
+			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
+			await cachestore.set(
+				["cache", interaction.user.id, originalResponse.id].join("/"),
+				JSON.stringify({
+					input: {
+						reason: values[1],
+						action: values[2],
+						warningCount,
+					},
+					roblox: {
+						user: robloxUser,
+						avatar: robloxAvatar,
+					},
+				} as command1CacheData),
+				{
+					expiry: 15 * 60, // expire after interaction tokens are invalidated (15 minutes)
+				}
+			);
+		} catch (error) {
+			if (error instanceof SystemError) {
+				console.log("systemError /log: ", error);
+				await interaction.edit(error.message);
+			} else {
+				await interaction.edit(new SystemError().message);
+			}
+		}
 	},
 } as SystemCommandElement;

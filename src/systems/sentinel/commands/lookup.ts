@@ -10,6 +10,7 @@ import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
 import { ApplicationCommandOptionTypes } from "@discordeno/bot";
 import { dateFromDays, extractUserAutocompleteID } from "../../../helpers/utility.js";
+import { SystemError } from "../../../helpers/errors.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_HISTORY_VIEW;
 export default {
@@ -32,45 +33,50 @@ export default {
 	async execute(interaction, values: [string, number]) {
 		await interaction.defer(true);
 
-		const robloxUser = await roblox.users.single(extractUserAutocompleteID(values[0]) || values[0]);
-		const robloxAvatar = await (async () => {
-			async function requestAvatar(
-				retried?: boolean
-			): Promise<UsersAvatar["imageUrl"] | undefined> {
-				return await roblox.users.avatars
-					.full([robloxUser.id], { size: "720x720" })
-					.then(async (avatar) => {
-						if (avatar[0]?.state == UsersAvatarStates.Completed) {
-							return avatar[0]?.imageUrl;
-						} else if (
-							!retried &&
-							(avatar[0]?.state == UsersAvatarStates.Pending ||
-								avatar[0]?.state == UsersAvatarStates.TemporarilyUnavailable ||
-								avatar[0]?.state == UsersAvatarStates.Error)
-						) {
-							console.error("roblox avatar not ready");
-							return await requestAvatar(true);
-						}
-					});
-			}
-			return requestAvatar();
-		})();
+		try {
+			const robloxUser = await roblox.users.single(
+				extractUserAutocompleteID(values[0]) || values[0]
+			);
+			const robloxAvatar = await (async () => {
+				async function requestAvatar(
+					retried?: boolean
+				): Promise<UsersAvatar["imageUrl"] | undefined> {
+					return await roblox.users.avatars
+						.full([robloxUser.id], { size: "720x720" })
+						.then(async (avatar) => {
+							if (avatar[0]?.state == UsersAvatarStates.Completed) {
+								return avatar[0]?.imageUrl;
+							} else if (
+								!retried &&
+								(avatar[0]?.state == UsersAvatarStates.Pending ||
+									avatar[0]?.state == UsersAvatarStates.TemporarilyUnavailable ||
+									avatar[0]?.state == UsersAvatarStates.Error)
+							) {
+								console.error("roblox avatar not ready");
+								return await requestAvatar(true);
+							}
+						})
+						.catch((error) => {
+							console.error(error);
+							return undefined;
+						});
+				}
+				return requestAvatar();
+			})();
 
-		const warnings = await datastore.records.findMany({
-			where: {
-				input: {
-					is: {
-						user: {
-							id: robloxUser.id,
+			const userWarnings = await datastore.records.findMany({
+				where: {
+					input: {
+						is: {
+							user: {
+								id: robloxUser.id,
+							},
+							action: RecordActions.Warning,
 						},
-						action: RecordActions.Warning,
 					},
 				},
-			},
-		});
-
-		await datastore.records
-			.findMany({
+			});
+			const userRecods = await datastore.records.findMany({
 				where: {
 					input: {
 						is: {
@@ -86,27 +92,30 @@ export default {
 				orderBy: {
 					createdAt: "desc",
 				},
-			})
-			.then(async (records) => {
-				await interaction.edit(
-					response[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]({
-						author: interaction.user,
-						roblox: {
-							user: robloxUser,
-							avatar: robloxAvatar,
-						},
-						warnings: {
-							week: warnings.filter((record) => +record.createdAt >= +dateFromDays(7)).length,
-							month: warnings.filter((record) => +record.createdAt >= +dateFromDays(30)).length,
-							total: warnings.length,
-						},
-						history: records,
-					})
-				);
-			})
-			.catch(async (error) => {
-				console.error("db record find failed: ", error);
-				await interaction.edit("error4");
 			});
+
+			await interaction.edit(
+				response[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]({
+					author: interaction.user,
+					roblox: {
+						user: robloxUser,
+						avatar: robloxAvatar,
+					},
+					warnings: {
+						week: userWarnings.filter((record) => +record.createdAt >= +dateFromDays(7)).length,
+						month: userWarnings.filter((record) => +record.createdAt >= +dateFromDays(30)).length,
+						total: userWarnings.length,
+					},
+					history: userRecods,
+				})
+			);
+		} catch (error) {
+			if (error instanceof SystemError) {
+				console.log("systemError /lookup: ", error);
+				await interaction.edit(error.message);
+			} else {
+				await interaction.edit(new SystemError().message);
+			}
+		}
 	},
 } as SystemCommandElement;

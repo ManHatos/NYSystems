@@ -1,27 +1,38 @@
 import { PrismaClient } from "@prisma/client";
 import { log } from "../helpers/logger.js";
 
-export const datastore = new PrismaClient({
-	datasources: {
-		db: {
-			url: process.env.DATABASE_URL,
+export const datastore = Object.assign(
+	new PrismaClient({
+		datasources: {
+			db: {
+				url: process.env.DATABASE_URL,
+			},
 		},
-	},
-	log: [
-		{
-			level: "info",
-			emit: "event",
+		log: [
+			{
+				level: "info",
+				emit: "event",
+			},
+			{
+				level: "query",
+				emit: "event",
+			},
+			{
+				level: "error",
+				emit: "event",
+			},
+		],
+	}),
+	{
+		async connect() {
+			await datastore.$connect();
+			const status = await datastore.$runCommandRaw({
+				connectionStatus: 1,
+			});
+			console.log(status);
 		},
-		{
-			level: "query",
-			emit: "event",
-		},
-		{
-			level: "error",
-			emit: "event",
-		},
-	],
-});
+	}
+);
 
 datastore.$on("info", (event) => {
 	log.info("Datastore service online");
