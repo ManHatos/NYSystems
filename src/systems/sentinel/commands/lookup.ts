@@ -8,7 +8,7 @@ import autocomplete from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
-import { ApplicationCommandOptionTypes } from "@discordeno/bot";
+import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
 import { dateFromDays, extractUserAutocompleteID } from "../../../helpers/utility.js";
 import { SystemError } from "../../../helpers/errors.js";
 
@@ -112,9 +112,12 @@ export default {
 		} catch (error) {
 			if (error instanceof SystemError) {
 				console.log("systemError /lookup: ", error);
-				await interaction.edit(error.message);
+				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds });
 			} else {
-				await interaction.edit(new SystemError().message);
+				await interaction.edit({
+					content: new SystemError().message,
+					flags: MessageFlags.SuppressEmbeds,
+				});
 			}
 		}
 	},
