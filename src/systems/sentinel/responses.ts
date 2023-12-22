@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { DiscordEmbedField, MessageComponentTypes, User, avatarUrl } from "@discordeno/bot";
-import { Embeds, ResponseIdentifiers, SystemResponse } from "../systems.js";
+import { Embeds, ResponseIdentifiers, SystemComponentElement, SystemResponse } from "../systems.js";
 import component1 from "./components/confirmRecord.js";
 import component2 from "./components/confirmBanRequest.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
@@ -38,7 +38,7 @@ export const response: SystemResponse<{
 		history: Partial<Records[]>;
 	};
 	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]: void;
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]: void;
+	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]: SystemComponentElement["data"];
 	[ResponseIdentifiers.MODERATION_RECORD_CREATE]: {
 		author: User;
 		roblox: {
@@ -183,12 +183,12 @@ export const response: SystemResponse<{
 			content: process.env.EMOJI_SUCCESS + " **Successfully submitted**",
 		};
 	},
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]() {
+	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](data) {
 		return {
 			components: [
 				{
 					type: MessageComponentTypes.ActionRow,
-					components: [{ ...component1.data, disabled: true }],
+					components: [{ ...data, disabled: true }],
 				},
 			],
 		};

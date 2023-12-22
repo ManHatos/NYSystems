@@ -88,7 +88,9 @@ export default {
 				},
 			});
 
-			await interaction.edit(response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]());
+			await interaction.edit(
+				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](this.data)
+			);
 			await discord.rest.sendFollowupMessage(interaction.token, {
 				...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
 				flags: MessageFlags.Ephemeral,

@@ -70,7 +70,9 @@ export default {
 				},
 			});
 
-			await interaction.edit(response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]());
+			await interaction.edit(
+				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](this.data)
+			);
 			await discord.rest.sendFollowupMessage(interaction.token, {
 				...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
 				flags: MessageFlags.Ephemeral,
@@ -78,7 +80,11 @@ export default {
 		} catch (error) {
 			if (error instanceof SystemError) {
 				console.log("systemError [confirmLog]: ", error);
-				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds, components: [] });
+				await interaction.edit({
+					content: error.message,
+					flags: MessageFlags.SuppressEmbeds,
+					components: [],
+				});
 			} else {
 				console.log(error);
 				await interaction.edit({
