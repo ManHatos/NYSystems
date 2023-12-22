@@ -114,6 +114,7 @@ export default {
 				console.log("systemError /lookup: ", error);
 				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds });
 			} else {
+				console.log(error);
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,

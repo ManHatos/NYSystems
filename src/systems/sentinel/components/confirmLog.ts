@@ -106,6 +106,7 @@ export default {
 				console.log("systemError [confirmLog]: ", error);
 				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds });
 			} else {
+				console.log(error);
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,
