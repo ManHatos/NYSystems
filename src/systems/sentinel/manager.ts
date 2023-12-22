@@ -14,9 +14,10 @@ import command2 from "./commands/lookup.js";
 export const commands: SystemManager["commands"] = [command1, command2];
 
 // importing and exporting all component files
-import component1 from "./components/confirmLog.js";
+import component1 from "./components/confirmRecord.js";
+import component2 from "./components/confirmBanRequest.js";
 
-export const components: SystemManager["components"] = [component1];
+export const components: SystemManager["components"] = [component1, component2];
 
 // additional system typings
 export type command1CacheData = {

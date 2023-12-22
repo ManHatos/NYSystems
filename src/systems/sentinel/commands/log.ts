@@ -7,7 +7,7 @@ import {
 import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
 import {
 	BanRequest,
-	BanRequestState,
+	BanRequestStates,
 	RecordActions,
 	datastore,
 } from "../../../services/datastore.js";
@@ -103,6 +103,17 @@ export default {
 			const warningCount = userRecords.filter(
 				(record) => record.input.action == RecordActions.Warning
 			).length;
+			const banRequests = await datastore.banRequests.findMany({
+				where: {
+					input: {
+						is: {
+							user: {
+								id: robloxUser.id,
+							},
+						},
+					},
+				},
+			});
 
 			if (
 				!interaction.member?.roles.find((role) =>
@@ -120,7 +131,7 @@ export default {
 								},
 							},
 						},
-						state: BanRequestState.Pending,
+						state: BanRequestStates.Pending,
 					},
 				});
 
@@ -138,7 +149,7 @@ export default {
 						history: userRecords,
 						input: {
 							reason: values[1],
-							state: BanRequestState.Pending,
+							state: BanRequestStates.Pending,
 						},
 						roblox: {
 							user: robloxUser,
@@ -150,7 +161,7 @@ export default {
 				await interaction.edit(
 					response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
 						author: interaction.user,
-						history: userRecords,
+						history: { records: userRecords, banRequests },
 						input: {
 							reason: values[1],
 							action: values[2],
@@ -185,12 +196,17 @@ export default {
 		} catch (error) {
 			if (error instanceof SystemError) {
 				console.log("systemError /log: ", error);
-				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds });
+				await interaction.edit({
+					content: error.message,
+					flags: MessageFlags.SuppressEmbeds,
+					components: [],
+				});
 			} else {
 				console.log(error);
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,
+					components: [],
 				});
 			}
 		}

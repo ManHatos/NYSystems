@@ -54,8 +54,8 @@ export enum RecordActions {
 
 export type BanRequest = "Ban Request";
 
-export enum BanRequestState {
+export enum BanRequestStates {
 	"Pending" = 0,
 	"Rejected" = 1,
-	"Completed" = 2,
+	"Approved" = 2,
 }

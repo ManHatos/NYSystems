@@ -76,7 +76,7 @@ export default {
 					},
 				},
 			});
-			const userRecods = await datastore.records.findMany({
+			const userRecords = await datastore.records.findMany({
 				where: {
 					input: {
 						is: {
@@ -93,6 +93,17 @@ export default {
 					createdAt: "desc",
 				},
 			});
+			const banRequests = await datastore.banRequests.findMany({
+				where: {
+					input: {
+						is: {
+							user: {
+								id: robloxUser.id,
+							},
+						},
+					},
+				},
+			});
 
 			await interaction.edit(
 				response[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]({
@@ -106,18 +117,26 @@ export default {
 						month: userWarnings.filter((record) => +record.createdAt >= +dateFromDays(30)).length,
 						total: userWarnings.length,
 					},
-					history: userRecods,
+					history: {
+						records: userRecords,
+						banRequests,
+					},
 				})
 			);
 		} catch (error) {
 			if (error instanceof SystemError) {
 				console.log("systemError /lookup: ", error);
-				await interaction.edit({ content: error.message, flags: MessageFlags.SuppressEmbeds });
+				await interaction.edit({
+					content: error.message,
+					flags: MessageFlags.SuppressEmbeds,
+					components: [],
+				});
 			} else {
 				console.log(error);
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,
+					components: [],
 				});
 			}
 		}

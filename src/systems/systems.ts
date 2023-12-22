@@ -62,7 +62,9 @@ export const enum SystemAutocompleteIdentifiers {
 
 export const enum SystemComponentIdentifiers {
 	/** component used to confirm the creation of a moderation log */
-	"MODERATION_LOG_CONFIRM" = "confirmLog",
+	"MODERATION_LOG_CONFIRM" = "confirmRecord",
+	/** component used to confirm the creation of a ban request */
+	"MODERATION_BR_CONFIRM" = "confirmBR",
 }
 
 export const enum ResponseIdentifiers {

@@ -1,10 +1,11 @@
 import "dotenv/config";
 import { DiscordEmbedField, MessageComponentTypes, User, avatarUrl } from "@discordeno/bot";
 import { Embeds, ResponseIdentifiers, SystemResponse } from "../systems.js";
-import component1 from "./components/confirmLog.js";
+import component1 from "./components/confirmRecord.js";
+import component2 from "./components/confirmBanRequest.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
-import { BanRequest, BanRequestState, RecordActions } from "../../services/datastore.js";
-import { Records } from "@prisma/client";
+import { BanRequest, BanRequestStates, RecordActions } from "../../services/datastore.js";
+import { BanRequests, Records } from "@prisma/client";
 import color from "chalk";
 
 export const response: SystemResponse<{
@@ -19,7 +20,10 @@ export const response: SystemResponse<{
 			action: RecordActions;
 			warningCount: number;
 		};
-		history: Partial<Records[]>;
+		history: {
+			records: Partial<Records[]>;
+			banRequests?: Partial<BanRequests[]>;
+		};
 	};
 	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]: {
 		author: User;
@@ -29,7 +33,7 @@ export const response: SystemResponse<{
 		};
 		input: {
 			reason: string;
-			state: BanRequestState;
+			state: BanRequestStates;
 		};
 		history: Partial<Records[]>;
 	};
@@ -68,7 +72,10 @@ export const response: SystemResponse<{
 			month: number;
 			total: number;
 		};
-		history: Partial<Records[]>;
+		history: {
+			records: Partial<Records[]>;
+			banRequests?: Partial<BanRequests[]>;
+		};
 	};
 }> = {
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM](data) {
@@ -155,7 +162,7 @@ export const response: SystemResponse<{
 								value: "```ansi\n" + formatBanRequestState(data.input.state) + "\n```",
 								inline: true,
 							},
-							...formatHistory(data.history),
+							...formatHistory({ records: data.history }),
 						],
 					},
 				],
@@ -166,7 +173,7 @@ export const response: SystemResponse<{
 			components: [
 				{
 					type: MessageComponentTypes.ActionRow,
-					components: [{ label: "Submit Ban Request", ...component1.data }],
+					components: [component2.data],
 				},
 			],
 		};
@@ -258,7 +265,7 @@ export const response: SystemResponse<{
 							},
 							{
 								name: "Status",
-								value: "```ansi\n" + formatBanRequestState(BanRequestState.Pending) + "\n```",
+								value: "```ansi\n" + formatBanRequestState(BanRequestStates.Pending) + "\n```",
 								inline: true,
 							},
 						],
@@ -366,38 +373,71 @@ function formatAction(type: RecordActions | BanRequest): string {
 	}
 }
 
-function formatBanRequestState(state: BanRequestState): string {
+function formatBanRequestState(state: BanRequestStates): string {
 	switch (state) {
-		case BanRequestState.Pending: {
-			return color.yellow(BanRequestState[state]);
+		case BanRequestStates.Pending: {
+			return color.red(BanRequestStates[state]);
 		}
-		case BanRequestState.Rejected: {
-			return color.red(BanRequestState[state]);
+		case BanRequestStates.Rejected: {
+			return color.yellow(BanRequestStates[state]);
 		}
-		case BanRequestState.Completed: {
-			return color.green(BanRequestState[state]);
+		case BanRequestStates.Approved: {
+			return color.green(BanRequestStates[state]);
 		}
 	}
 }
 
 function formatHistory(
-	history: Partial<Records[]>,
+	history: { records: Partial<Records[]>; banRequests?: Partial<BanRequests[]> },
 	options: {
 		limit: number;
 	} = {
 		limit: 3,
 	}
-) {
+): DiscordEmbedField[] {
+	if (history.records.length + (history.banRequests?.length ?? 0) < 1)
+		return [
+			{
+				name: "**History**",
+				value: ":mag: *no user history found*",
+			},
+		];
+
 	const fields: DiscordEmbedField[] = [
 		{
-			name: "**Record History**",
-			value: history.length < 1 ? ":mag: *no record history found*" : "** **",
+			name: "**History**",
+			value: "** **",
 		},
 	];
-	let count = 1;
 
-	history.splice(options.limit); // limit array length
-	history.forEach((record, index, array) => {
+	history.banRequests?.forEach((request) => {
+		if (request?.state == BanRequestStates.Pending) {
+			fields.push({
+				name: `\` ⚠️ \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${process.env.SENTINEL_BR_CHANNEL_ID}/${request.id}`,
+				value:
+					"**Created <t:" +
+					(+new Date(request.createdAt) / 1000).toFixed(0) +
+					":R>**\nby <@" +
+					request.author.id +
+					">\n```ansi\n" +
+					color.white("Reason  ") +
+					color.black(request.input.reason) +
+					"\n``````ansi\n" +
+					color.white("Status  ") +
+					formatBanRequestState(request.state) +
+					"\n```",
+			});
+
+			if (history.records.length > 0)
+				fields.push({
+					name: "** **",
+					value: "** **",
+				});
+		}
+	});
+
+	let count = 1;
+	history.records.forEach((record, index, array) => {
 		if (!record) return;
 		fields.push({
 			name: `\` ${count++} \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${
@@ -416,7 +456,7 @@ function formatHistory(
 				formatAction(record.input.action) +
 				"\n```",
 		});
-		if (index + 1 != array.length)
+		if (index + 1 < array.length)
 			fields.push({
 				name: "** **",
 				value: "** **",

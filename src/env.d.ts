@@ -46,10 +46,6 @@ declare global {
 			URI_EMBED_WIDTH_LIMITER: string;
 
 			// sentinel system
-			/** webhook token used by sentinal for user records */
-			SENTINEL_WEBHOOK_TOKEN: string;
-			/** webhook identifier used by sentinal for user records */
-			SENTINEL_WEBHOOK_ID: string;
 			/** channel identifier used by sentinel for user records */
 			SENTINEL_CHANNEL_ID: string;
 			/** channel identifier used by sentinel for user ban requests */
