@@ -40,6 +40,7 @@ export const enum ErrorCodes {
 	// shared
 	"UNKNOWN",
 	"OUTDATED_REQUEST",
+	"DUPLICATE_RESOURCE",
 
 	// cachestore
 	"CACHESTORE_UNKNOWN",

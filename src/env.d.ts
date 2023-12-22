@@ -52,12 +52,16 @@ declare global {
 			SENTINEL_WEBHOOK_ID: string;
 			/** channel identifier used by sentinel for user records */
 			SENTINEL_CHANNEL_ID: string;
+			/** channel identifier used by sentinel for user ban requests */
+			SENTINEL_BR_CHANNEL_ID: string;
 			/** primary embed color used be sentinel in most messages */
 			SENTINEL_EMBED_COLOR_PRIMARY: string;
 			/** "preview" embed color used be sentinel in record previews */
 			SENTINEL_EMBED_COLOR_PREVIEW: string;
 			/** prefix that is used to identify autocomplete choices in autocomplete options */
 			SENTINEL_USER_AUTOCOMPLETE_PREFIX: string;
+			/** roles identifiers allowed to submit ban records, separated by `,` */
+			SENTINEL_BR_ROLES: string;
 		}
 	}
 }

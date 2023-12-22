@@ -47,7 +47,15 @@ datastore.$on("query", (event) => {
 });
 
 export enum RecordActions {
-	"Ban" = 0,
-	"Kick" = 1,
 	"Warning" = 2,
+	"Kick" = 1,
+	"Ban" = 0,
+}
+
+export type BanRequest = "Ban Request";
+
+export enum BanRequestState {
+	"Pending" = 0,
+	"Rejected" = 1,
+	"Completed" = 2,
 }

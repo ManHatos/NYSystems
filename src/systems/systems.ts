@@ -68,12 +68,16 @@ export const enum SystemComponentIdentifiers {
 export const enum ResponseIdentifiers {
 	/** response sent prompting a confirmation after a `MODERATION_CREATE_NEW` interaction */
 	"MODERATION_CREATE_CONFIRM",
+	/** response sent prompting a confirmation after a `MODERATION_CREATE_NEW` interaction with an unauthorized role for bans */
+	"MODERATION_BR_CREATE_CONFIRM",
 	/** response sent following a `MODERATION_CREATE_NEW` interaction */
 	"MODERATION_CREATED_SUCCESS",
 	/** updated `MODERATION_CREATE_CONFIRM` response shown following a successful moderation record creation */
 	"MODERATION_CREATE_CONFIRM_UPDATE",
 	/** a moderation record */
 	"MODERATION_RECORD_CREATE",
+	/** a moderation ban request */
+	"MODERATION_BAN_REQUEST",
 	/** response sent following a `MODERATION_HISTORY_VIEW` interaction */
 	"MODERATION_HISTORY_LOOKUP",
 }

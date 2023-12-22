@@ -3,7 +3,7 @@ import { DiscordEmbedField, MessageComponentTypes, User, avatarUrl } from "@disc
 import { Embeds, ResponseIdentifiers, SystemResponse } from "../systems.js";
 import component1 from "./components/confirmLog.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
-import { RecordActions } from "../../services/datastore.js";
+import { BanRequest, BanRequestState, RecordActions } from "../../services/datastore.js";
 import { Records } from "@prisma/client";
 import color from "chalk";
 
@@ -21,6 +21,18 @@ export const response: SystemResponse<{
 		};
 		history: Partial<Records[]>;
 	};
+	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]: {
+		author: User;
+		roblox: {
+			user: UsersSingle;
+			avatar?: UsersAvatar["imageUrl"];
+		};
+		input: {
+			reason: string;
+			state: BanRequestState;
+		};
+		history: Partial<Records[]>;
+	};
 	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]: void;
 	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]: void;
 	[ResponseIdentifiers.MODERATION_RECORD_CREATE]: {
@@ -33,6 +45,16 @@ export const response: SystemResponse<{
 			reason: string;
 			action: RecordActions;
 			warningCount: number;
+		};
+	};
+	[ResponseIdentifiers.MODERATION_BAN_REQUEST]: {
+		author: User;
+		roblox: {
+			user: UsersSingle;
+			avatar?: UsersAvatar["imageUrl"];
+		};
+		input: {
+			reason: string;
 		};
 	};
 	[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]: {
@@ -99,6 +121,56 @@ export const response: SystemResponse<{
 			],
 		};
 	},
+	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM](data) {
+		return {
+			embeds: Embeds(
+				[
+					{
+						author: {
+							name: "@" + data.author.username,
+							iconUrl: avatarUrl(data.author.id!, data.author.discriminator ?? "0", {
+								avatar: data.author.avatar ?? undefined,
+							}),
+						},
+						description: `## [User Ban Request Preview](https://roblox.com/users/${data.roblox.user.id})\n:warning: **This ban request has not been saved yet**\nPlease verify the entered information to confirm`,
+						thumbnail: {
+							url: data.roblox.avatar ?? process.env.URI_AVATAR_LOAD_ERROR,
+						},
+						fields: [
+							{
+								name: "Roblox",
+								value: formatRobloxUser(data.roblox.user.name, data.roblox.user.id),
+							},
+							{
+								name: "Reason",
+								value: "```ansi\n" + color.white(data.input.reason) + "\n```",
+							},
+							{
+								name: "Action",
+								value: "```ansi\n" + formatAction("Ban Request") + "\n```",
+								inline: true,
+							},
+							{
+								name: "Status",
+								value: "```ansi\n" + formatBanRequestState(data.input.state) + "\n```",
+								inline: true,
+							},
+							...formatHistory(data.history),
+						],
+					},
+				],
+				{
+					color: Number(process.env.SENTINEL_EMBED_COLOR_PREVIEW),
+				}
+			),
+			components: [
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [{ label: "Submit Ban Request", ...component1.data }],
+				},
+			],
+		};
+	},
 	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]() {
 		return {
 			content: process.env.EMOJI_SUCCESS + " **Successfully submitted**",
@@ -157,6 +229,47 @@ export const response: SystemResponse<{
 			),
 			components: [
 				//  TODO: add component(s) to manage records
+			],
+		};
+	},
+	[ResponseIdentifiers.MODERATION_BAN_REQUEST](data) {
+		return {
+			embeds: Embeds(
+				[
+					{
+						author: {
+							name: "@" + data.author.username,
+							iconUrl: avatarUrl(data.author.id!, data.author.discriminator ?? "0", {
+								avatar: data.author.avatar ?? undefined,
+							}),
+						},
+						description: `## [Ban Request](https://roblox.com/users/${data.roblox.user.id})`,
+						thumbnail: {
+							url: data.roblox.avatar ?? process.env.URI_AVATAR_LOAD_ERROR,
+						},
+						fields: [
+							{
+								name: "Roblox",
+								value: formatRobloxUser(data.roblox.user.name, data.roblox.user.id),
+							},
+							{
+								name: "Reason",
+								value: "```ansi\n" + color.white(data.input.reason) + "\n```",
+							},
+							{
+								name: "Status",
+								value: "```ansi\n" + formatBanRequestState(BanRequestState.Pending) + "\n```",
+								inline: true,
+							},
+						],
+					},
+				],
+				{
+					color: Number(process.env.SENTINEL_EMBED_COLOR_PRIMARY),
+				}
+			),
+			components: [
+				//  TODO: add component(s) to manage ban requests
 			],
 		};
 	},
@@ -236,7 +349,7 @@ function formatRobloxUser(
 	);
 }
 
-function formatAction(type: RecordActions): string {
+function formatAction(type: RecordActions | BanRequest): string {
 	switch (type) {
 		case RecordActions.Ban: {
 			return color.red(RecordActions[type]);
@@ -246,6 +359,23 @@ function formatAction(type: RecordActions): string {
 		}
 		case RecordActions.Warning: {
 			return color.cyan(RecordActions[type]);
+		}
+		case "Ban Request": {
+			return color.red(type);
+		}
+	}
+}
+
+function formatBanRequestState(state: BanRequestState): string {
+	switch (state) {
+		case BanRequestState.Pending: {
+			return color.yellow(BanRequestState[state]);
+		}
+		case BanRequestState.Rejected: {
+			return color.red(BanRequestState[state]);
+		}
+		case BanRequestState.Completed: {
+			return color.green(BanRequestState[state]);
 		}
 	}
 }

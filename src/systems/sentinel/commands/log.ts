@@ -5,7 +5,12 @@ import {
 	SystemCommandIdentifiers,
 } from "../../systems.js";
 import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
-import { RecordActions, datastore } from "../../../services/datastore.js";
+import {
+	BanRequest,
+	BanRequestState,
+	RecordActions,
+	datastore,
+} from "../../../services/datastore.js";
 import autocomplete1 from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";
@@ -14,7 +19,7 @@ import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
 import { command1CacheData } from "../manager.js";
 import { extractUserAutocompleteID } from "../../../helpers/utility.js";
-import { SystemError } from "../../../helpers/errors.js";
+import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 
 export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
 export default {
@@ -45,7 +50,7 @@ export default {
 			},
 		],
 	},
-	async execute(interaction, values: [string, string, number]) {
+	async execute(interaction, values: [string, string, RecordActions | BanRequest]) {
 		await interaction.defer(true);
 
 		try {
@@ -99,21 +104,65 @@ export default {
 				(record) => record.input.action == RecordActions.Warning
 			).length;
 
-			await interaction.edit(
-				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
-					author: interaction.user,
-					history: userRecords,
-					input: {
-						reason: values[1],
-						action: values[2],
-						warningCount,
+			if (
+				!interaction.member?.roles.find((role) =>
+					process.env.SENTINEL_BR_ROLES.split(",").includes(String(role))
+				) &&
+				values[2] == RecordActions.Ban
+			) {
+				values[2] = "Ban Request";
+				const banRequests = await datastore.banRequests.findMany({
+					where: {
+						input: {
+							is: {
+								user: {
+									id: robloxUser.id,
+								},
+							},
+						},
+						state: BanRequestState.Pending,
 					},
-					roblox: {
-						user: robloxUser,
-						avatar: robloxAvatar,
-					},
-				})
-			);
+				});
+
+				if (banRequests.length > 0)
+					throw new SystemError({
+						code: ErrorCodes.DUPLICATE_RESOURCE,
+						message: `The user \` ${robloxUser.name} \` has a pending ban request.`,
+						level: ErrorLevels.User,
+						cause: "Ban request pending alread exists",
+					});
+
+				await interaction.edit(
+					response[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]({
+						author: interaction.user,
+						history: userRecords,
+						input: {
+							reason: values[1],
+							state: BanRequestState.Pending,
+						},
+						roblox: {
+							user: robloxUser,
+							avatar: robloxAvatar,
+						},
+					})
+				);
+			} else if (values[2] != "Ban Request") {
+				await interaction.edit(
+					response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
+						author: interaction.user,
+						history: userRecords,
+						input: {
+							reason: values[1],
+							action: values[2],
+							warningCount,
+						},
+						roblox: {
+							user: robloxUser,
+							avatar: robloxAvatar,
+						},
+					})
+				);
+			}
 
 			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
 			await cachestore.set(

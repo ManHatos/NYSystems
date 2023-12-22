@@ -1,6 +1,6 @@
 {
 	"name": "ny-systems",
-	"version": "0.0.0-canary.1",
+	"version": "0.0.0-canary.2",
 	"author": "ManHat",
 	"type": "module",
 	"main": "index.js",
@@ -9,9 +9,7 @@
 		"p-sync": "npx prisma db push",
 		"clean": "rimraf dist/ -G dist",
 		"build": "npm run p-gen && npm run clean && npx tsc",
-		"start": "npm run build && node dist/",
-		"test": "npm run build && node dist/play.local.js",
-		"bm": "npm run build && node dist/benchmark.local.js"
+		"start": "npm run build && node dist/"
 	},
 	"dependencies": {
 		"@discordeno/bot": "^19.0.0-next.7aed376",

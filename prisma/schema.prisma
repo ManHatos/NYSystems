@@ -19,25 +19,41 @@ type RobloxUser {
   id BigInt
 }
 
+type Editor {
+  user     DiscordUser
+  editedAt DateTime @default(now())
+}
+
 // moderation records data
 
 model Records {
   id        BigInt         @id @map("_id")
   author    DiscordUser
-  editors   RecordEditor[]
+  editors   Editor[]
   input     RecordInput
   createdAt DateTime       @default(now())
-}
-
-type RecordEditor {
-  user     DiscordUser
-  editedAt DateTime @default(now())
 }
 
 type RecordInput {
   user   RobloxUser
   reason String
   action Int
+}
+
+// moderation ban requests data
+
+model BanRequests {
+  id        BigInt         @id @map("_id")
+  author    DiscordUser
+  editors   Editor[]
+  input     BanInput
+  state     Int            @default(0)
+  createdAt DateTime       @default(now())
+}
+
+type BanInput {
+  user   RobloxUser
+  reason String
 }
 
 // user notes

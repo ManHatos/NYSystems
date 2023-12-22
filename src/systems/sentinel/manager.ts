@@ -1,4 +1,4 @@
-import { RecordActions } from "../../services/datastore.js";
+import { BanRequest, RecordActions } from "../../services/datastore.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
 import { SystemManager } from "../systems.js";
 
@@ -22,7 +22,7 @@ export const components: SystemManager["components"] = [component1];
 export type command1CacheData = {
 	input: {
 		reason: string;
-		action: RecordActions;
+		action: RecordActions | BanRequest;
 		warningCount: number;
 	};
 	roblox: {
