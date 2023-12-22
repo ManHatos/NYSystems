@@ -1,4 +1,4 @@
-import { RecordActions, datastore } from "../../../services/datastore.js";
+import { BanRequestStates, RecordActions, datastore } from "../../../services/datastore.js";
 import {
 	ResponseIdentifiers,
 	SystemCommandElement,
@@ -102,6 +102,7 @@ export default {
 							},
 						},
 					},
+					state: BanRequestStates.Pending,
 				},
 			});
 
@@ -119,7 +120,7 @@ export default {
 					},
 					history: {
 						records: userRecords,
-						banRequests,
+						banRequests: banRequests[0],
 					},
 				})
 			);

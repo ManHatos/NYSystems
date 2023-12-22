@@ -21,17 +21,17 @@ type RobloxUser {
 
 type Editor {
   user     DiscordUser
-  editedAt DateTime @default(now())
+  editedAt DateTime    @default(now())
 }
 
 // moderation records data
 
 model Records {
-  id        BigInt         @id @map("_id")
+  id        BigInt      @id @map("_id")
   author    DiscordUser
   editors   Editor[]
   input     RecordInput
-  createdAt DateTime       @default(now())
+  createdAt DateTime    @default(now())
 }
 
 type RecordInput {
@@ -43,12 +43,12 @@ type RecordInput {
 // moderation ban requests data
 
 model BanRequests {
-  id        BigInt         @id @map("_id")
+  id        BigInt      @id @map("_id")
   author    DiscordUser
   editors   Editor[]
   input     BanInput
-  state     Int            @default(0)
-  createdAt DateTime       @default(now())
+  state     Int         @default(0)
+  createdAt DateTime    @default(now())
 }
 
 type BanInput {

@@ -161,7 +161,7 @@ export default {
 				await interaction.edit(
 					response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
 						author: interaction.user,
-						history: { records: userRecords, banRequests },
+						history: { records: userRecords, banRequests: banRequests[0] },
 						input: {
 							reason: values[1],
 							action: values[2],

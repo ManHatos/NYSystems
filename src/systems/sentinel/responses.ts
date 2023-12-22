@@ -22,7 +22,7 @@ export const response: SystemResponse<{
 		};
 		history: {
 			records: Partial<Records[]>;
-			banRequests?: Partial<BanRequests[]>;
+			banRequests?: BanRequests;
 		};
 	};
 	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]: {
@@ -74,7 +74,7 @@ export const response: SystemResponse<{
 		};
 		history: {
 			records: Partial<Records[]>;
-			banRequests?: Partial<BanRequests[]>;
+			banRequests?: BanRequests;
 		};
 	};
 }> = {
@@ -388,14 +388,14 @@ function formatBanRequestState(state: BanRequestStates): string {
 }
 
 function formatHistory(
-	history: { records: Partial<Records[]>; banRequests?: Partial<BanRequests[]> },
+	history: { records: Partial<Records[]>; banRequest?: BanRequests },
 	options: {
 		limit: number;
 	} = {
 		limit: 3,
 	}
 ): DiscordEmbedField[] {
-	if (history.records.length + (history.banRequests?.length ?? 0) < 1)
+	if (history.records.length < 1 && !history.banRequest)
 		return [
 			{
 				name: "**History**",
@@ -409,34 +409,32 @@ function formatHistory(
 			value: "** **",
 		},
 	];
+	if (history.banRequest) {
+		fields.push({
+			name: `\` ⚠️ \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${process.env.SENTINEL_BR_CHANNEL_ID}/${history.banRequest.id}`,
+			value:
+				"**Created <t:" +
+				(+new Date(history.banRequest.createdAt) / 1000).toFixed(0) +
+				":R>**\nby <@" +
+				history.banRequest.author.id +
+				">\n```ansi\n" +
+				color.white("Reason  ") +
+				color.black(history.banRequest.input.reason) +
+				"\n``````ansi\n" +
+				color.white("Status  ") +
+				formatBanRequestState(history.banRequest.state) +
+				"\n```",
+		});
 
-	history.banRequests?.forEach((request) => {
-		if (request?.state == BanRequestStates.Pending) {
+		if (history.records.length > 0)
 			fields.push({
-				name: `\` ⚠️ \` https://discord.com/channels/${process.env.DISCORD_GUILD}/${process.env.SENTINEL_BR_CHANNEL_ID}/${request.id}`,
-				value:
-					"**Created <t:" +
-					(+new Date(request.createdAt) / 1000).toFixed(0) +
-					":R>**\nby <@" +
-					request.author.id +
-					">\n```ansi\n" +
-					color.white("Reason  ") +
-					color.black(request.input.reason) +
-					"\n``````ansi\n" +
-					color.white("Status  ") +
-					formatBanRequestState(request.state) +
-					"\n```",
+				name: "** **",
+				value: "** **",
 			});
-
-			if (history.records.length > 0)
-				fields.push({
-					name: "** **",
-					value: "** **",
-				});
-		}
-	});
+	}
 
 	let count = 1;
+	history.records.splice(options.limit);
 	history.records.forEach((record, index, array) => {
 		if (!record) return;
 		fields.push({
