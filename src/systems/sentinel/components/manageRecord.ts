@@ -17,7 +17,8 @@ export default {
 		type: MessageComponentTypes.SelectMenu,
 		options: [
 			{
-				label: "Modify Reason",
+				label: "Reason",
+				description: "Modify the record's reason",
 				value: ManageRecordOptions.EDIT_REASON,
 				emoji: {
 					name: "editPencil",
@@ -25,7 +26,8 @@ export default {
 				},
 			},
 			{
-				label: "Modify Action",
+				label: "Action",
+				description: "Modify the records action",
 				value: ManageRecordOptions.EDIT_ACTION,
 				emoji: {
 					name: "editPencil",
@@ -33,7 +35,8 @@ export default {
 				},
 			},
 			{
-				label: "Delete Record",
+				label: "Delete",
+				description: "Permanently delete this record",
 				value: ManageRecordOptions.DELETE,
 				emoji: {
 					name: "trash",

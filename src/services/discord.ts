@@ -79,7 +79,15 @@ export const discord = createBot({
 					systems.components.has(interaction.data.customId)
 						? systems.components.get(interaction.data.customId)?.execute(interaction)
 						: log.error(`Unknown button "${interaction.data.customId}"`);
-				} else if (interaction.data.componentType == MessageComponentTypes.ActionRow) {
+				} else if (
+					[
+						MessageComponentTypes.SelectMenu,
+						MessageComponentTypes.SelectMenuChannels,
+						MessageComponentTypes.SelectMenuRoles,
+						MessageComponentTypes.SelectMenuUsers,
+						MessageComponentTypes.SelectMenuUsersAndRoles,
+					].includes(interaction.data.componentType)
+				) {
 					// select menus handler
 					systems.components.has(interaction.data.customId)
 						? systems.components.get(interaction.data.customId)?.execute(interaction)
