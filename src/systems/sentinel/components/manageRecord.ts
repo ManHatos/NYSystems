@@ -8,6 +8,7 @@ import { datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
+import { stringify } from "../../../helpers/utility.js";
 
 export const id = SystemComponentIdentifiers.SENTINEL_RECORD_MANAGE;
 export default {
@@ -94,6 +95,7 @@ export default {
 					);
 
 					modal1Values.reason = record.input.reason;
+					console.log(stringify(modal1.data));
 					await interaction.respond(modal1.data, {
 						isPrivate: true,
 					});
