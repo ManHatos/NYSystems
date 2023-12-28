@@ -78,6 +78,7 @@ export default {
 					level: ErrorLevels.User,
 				});
 
+			console.log(interaction.data.values);
 			switch (interaction.data.values[0] as ManageRecordOptions) {
 				case ManageRecordOptions.EDIT_REASON: {
 					await cachestore.set(

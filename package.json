@@ -5,6 +5,8 @@
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
+		"test": "npm run build && node dist/play.local.js",
+		"bm": "npm run build && node dist/benchmark.local.js",
 		"p-gen": "npx prisma generate",
 		"p-sync": "npx prisma db push",
 		"clean": "rimraf dist/ -G dist",

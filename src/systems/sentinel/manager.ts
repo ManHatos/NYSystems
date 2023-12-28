@@ -59,7 +59,7 @@ export type component3CacheData2 = {
 	message: Message;
 };
 
-export enum ManageRecordOptions {
+export const enum ManageRecordOptions {
 	"EDIT_REASON" = "EDIT_REASON",
 	"EDIT_ACTION" = "EDIT_ACTION",
 	"DELETE" = "DELETE",
