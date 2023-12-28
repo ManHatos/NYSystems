@@ -45,17 +45,11 @@ export default {
 
 			const reason =
 				interaction.data.components.at(0)?.components?.at(0)?.value || "<unknown reason>";
-			const cached = await (async () => {
-				const cacheKey = ["cache", interaction.user.id, "modal", id].join("/");
-				const data = cachestore.get(cacheKey);
-				await cachestore.delete(cacheKey);
-				return data;
-			})();
+			const data = (await cachestore.get(["cache", interaction.user.id, "modal", id].join("/"), {
+				delete: true,
+			})) as component3CacheData;
 
-			if (!cached) return;
-			const data = JSON.parse(cached) as component3CacheData;
-
-			const robloxUser = await roblox.users.single(String(data.roblox.user.id));
+			const robloxUser = await roblox.users.single(Number(data.roblox.user.id));
 			const robloxAvatar = await (async () => {
 				async function requestAvatar(
 					retried?: boolean

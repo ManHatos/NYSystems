@@ -2,12 +2,12 @@ import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
 import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../systems.js";
 import { ManageRecordOptions, component3CacheData, component3CacheData2 } from "../manager.js";
 import modal1, { values as modal1Values } from "../modals/editReason.js";
-import { id as component2ID } from "./confirmDelete.js";
-import { defaults as component1Default, id as component1ID } from "./editAction.js";
+import { defaults as component1Default } from "./editAction.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
 import { cachestore } from "../../../services/cachestore.js";
+import { discord } from "../../../services/discord.js";
 
 export const id = SystemComponentIdentifiers.SENTINEL_RECORD_MANAGE;
 export default {
@@ -82,12 +82,12 @@ export default {
 				case ManageRecordOptions.EDIT_REASON: {
 					await cachestore.set(
 						["cache", interaction.user.id, "modal", modal1.id].join("/"),
-						JSON.stringify({
+						{
 							message: interaction.message,
 							roblox: {
 								user: record.input.user,
 							},
-						} as component3CacheData),
+						} as component3CacheData,
 						{
 							expiry: 15 * 60,
 						}
@@ -100,37 +100,45 @@ export default {
 					modal1Values.reset();
 				}
 				case ManageRecordOptions.EDIT_ACTION: {
-					await cachestore.set(
-						["cache", interaction.user.id, "menu", component1ID].join("/"),
-						JSON.stringify({
-							message: interaction.message,
-							roblox: {
-								user: record.input.user,
-							},
-						} as component3CacheData),
-						{
-							expiry: 15 * 60,
-						}
-					);
-
 					component1Default.action = record.input.action;
 					await interaction.respond(response[SystemRID.SENTINEL_EDIT_ACTION](), {
 						isPrivate: true,
 					});
 					component1Default.reset();
-				}
-				case ManageRecordOptions.DELETE: {
+
+					const originalResponse = await discord.rest.getOriginalInteractionResponse(
+						interaction.token
+					);
 					await cachestore.set(
-						["cache", interaction.user.id, "button", component2ID].join("/"),
-						JSON.stringify({
+						["cache", interaction.user.id, originalResponse.id].join("/"),
+						{
 							message: interaction.message,
-						} as component3CacheData2),
+							roblox: {
+								user: record.input.user,
+							},
+						} as component3CacheData,
 						{
 							expiry: 15 * 60,
 						}
 					);
+				}
+				case ManageRecordOptions.DELETE: {
+					await interaction.respond(response[SystemRID.SENTINEL_RECORD_DELETE](), {
+						isPrivate: true,
+					});
 
-					await interaction.respond(response[SystemRID.SENTINEL_RECORD_DELETE]());
+					const originalResponse = await discord.rest.getOriginalInteractionResponse(
+						interaction.token
+					);
+					await cachestore.set(
+						["cache", interaction.user.id, originalResponse.id].join("/"),
+						{
+							message: interaction.message,
+						} as component3CacheData2,
+						{
+							expiry: 15 * 60,
+						}
+					);
 				}
 			}
 		} catch (error) {

@@ -77,3 +77,42 @@ export const formatErrorMessage = (error: SystemError): string => {
 
 	return emoji + " **" + segments.shift() + "**" + (segments ? "\n" + segments.join("\n") : "");
 };
+
+// unqiue values to validate stringify utilities
+const isBigInt = "_%T=BIGINT";
+const stringifyIdentifier = "__%G=STRINGIFY";
+
+/** `JSON.stringify` with proper `BigInt` handling */
+export const stringify = (data: any): string | undefined => {
+	if (data !== undefined) {
+		return JSON.stringify(data, (_, value) => {
+			return typeof value === "bigint" ? { [isBigInt]: true, value: value.toString() } : value;
+		});
+	}
+};
+
+/** check whether `data` is a valid `stringify` answer */
+export const validateStringify = (data: string): boolean => {
+	return data.startsWith(stringifyIdentifier);
+};
+
+/** `JSON.parse` with proper `BigInt` handling (`data` must be a valid `stringify` answer to validate `BigInt`s) */
+export const unstringify = (data?: string) => {
+	if (data !== undefined) {
+		if (!validateStringify(data))
+			throw new SystemError({
+				code: ErrorCodes.INVALID,
+				message: "Value passed to `unstringify` is not valid.",
+				cause: "`unstringify` validation check failed",
+				level: ErrorLevels.System,
+			});
+		return JSON.parse(data.replace(stringifyIdentifier, ""), (_, value) => {
+			return typeof value === "object" &&
+				Object.keys(value).every((key) => [isBigInt, "value"].includes(key)) &&
+				value[isBigInt] &&
+				typeof value.value == "string"
+				? BigInt(value.value)
+				: value;
+		});
+	}
+};

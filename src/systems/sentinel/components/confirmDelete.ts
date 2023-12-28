@@ -24,15 +24,14 @@ export default {
 		await interaction.defer(true);
 
 		try {
-			const cached = await (async () => {
-				const cacheKey = ["cache", interaction.user.id, "button", id].join("/");
-				const data = cachestore.get(cacheKey);
-				await cachestore.delete(cacheKey);
-				return data;
-			})();
+			if (!interaction.message) return;
 
-			if (!cached) return;
-			const data = JSON.parse(cached) as component3CacheData2;
+			const data = (await cachestore.get(
+				["cache", interaction.user.id, interaction.message.id].join("/"),
+				{
+					delete: true,
+				}
+			)) as component3CacheData2;
 
 			const record = await datastore.records.findUnique({
 				where: {

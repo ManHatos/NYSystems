@@ -43,6 +43,7 @@ export const enum ErrorCodes {
 	"DUPLICATE_RESOURCE",
 	"NOT_FOUND",
 	"UNAUTHORIZED",
+	"INVALID",
 
 	// cachestore
 	"CACHESTORE_UNKNOWN",

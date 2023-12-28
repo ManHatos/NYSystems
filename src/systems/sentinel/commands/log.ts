@@ -174,7 +174,7 @@ export default {
 			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
 			await cachestore.set(
 				["cache", interaction.user.id, originalResponse.id].join("/"),
-				JSON.stringify({
+				{
 					input: {
 						reason: values[1],
 						action: values[2],
@@ -184,7 +184,7 @@ export default {
 						user: robloxUser,
 						avatar: robloxAvatar,
 					},
-				} as command1CacheData),
+				} as command1CacheData,
 				{
 					expiry: 15 * 60, // expire after interaction tokens are invalidated (15 minutes)
 				}

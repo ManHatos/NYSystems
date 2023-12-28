@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { createClient } from "redis";
 import { ErrorCodes, ErrorLevels, SystemError } from "../helpers/errors.js";
+import { stringify, unstringify, validateStringify } from "../helpers/utility.js";
 
 const redis = createClient({
 	url: process.env.CACHE_URL,
@@ -27,13 +28,13 @@ export const cachestore = {
 	/** set a key with a value */
 	set: async (
 		key: string,
-		value: string,
+		value: any,
 		options?: { expiry?: number; replace?: false }
 	): Promise<void> => {
 		return new Promise(async (resolve, reject) => {
 			try {
 				await redis
-					.SET(key, value, {
+					.SET(key, typeof value == "string" ? value : stringify(value) ?? "<weird value>", {
 						EX: options?.expiry,
 						NX: options?.replace ? true : undefined,
 					})
@@ -45,7 +46,7 @@ export const cachestore = {
 		});
 	},
 	/** retrieve a value using its saved key */
-	get: async (key: string, options?: { expiry?: number; delete?: true }): Promise<string> => {
+	get: async (key: string, options?: { expiry?: number; delete?: true }): Promise<any> => {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const value = await (() => {
@@ -59,7 +60,8 @@ export const cachestore = {
 					else return redis.GET(key).catch(handleError);
 				})();
 
-				if (typeof value == "string") resolve(value);
+				if (typeof value == "string")
+					resolve(validateStringify(value) ? unstringify(value) : value);
 				else
 					throw new SystemError({
 						...defaultError(),

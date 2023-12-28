@@ -35,20 +35,17 @@ export default {
 		await interaction.defer(true);
 
 		try {
-			if (!interaction.data?.values?.at(0)) return;
+			if (!interaction.message || !interaction.data?.values?.at(0)) return;
 
 			const action = Number(interaction.data.values[0]) as RecordActions;
-			const cached = await (async () => {
-				const cacheKey = ["cache", interaction.user.id, "menu", id].join("/");
-				const data = cachestore.get(cacheKey);
-				await cachestore.delete(cacheKey);
-				return data;
-			})();
+			const data = (await cachestore.get(
+				["cache", interaction.user.id, interaction.message.id].join("/"),
+				{
+					delete: true,
+				}
+			)) as component3CacheData;
 
-			if (!cached) return;
-			const data = JSON.parse(cached) as component3CacheData;
-
-			const robloxUser = await roblox.users.single(String(data.roblox.user.id));
+			const robloxUser = await roblox.users.single(Number(data.roblox.user.id));
 			const robloxAvatar = await (async () => {
 				async function requestAvatar(
 					retried?: boolean
