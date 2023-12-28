@@ -1,6 +1,6 @@
 import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
-import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../systems.js";
-import { ManageRecordOptions, component3CacheData, component3CacheData2 } from "../manager.js";
+import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
+import { ManageRecordOptions, component3CacheData, component3CacheData2 } from "../types.js";
 import modal1, { values as modal1Values } from "../modals/editReason.js";
 import { defaults as component1Default } from "./editAction.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
@@ -78,7 +78,6 @@ export default {
 					level: ErrorLevels.User,
 				});
 
-			console.log(interaction.data.values);
 			switch (interaction.data.values[0] as ManageRecordOptions) {
 				case ManageRecordOptions.EDIT_REASON: {
 					await cachestore.set(
@@ -99,6 +98,7 @@ export default {
 						isPrivate: true,
 					});
 					modal1Values.reset();
+					break;
 				}
 				case ManageRecordOptions.EDIT_ACTION: {
 					component1Default.action = record.input.action;
@@ -122,6 +122,7 @@ export default {
 							expiry: 15 * 60,
 						}
 					);
+					break;
 				}
 				case ManageRecordOptions.DELETE: {
 					await interaction.respond(response[SystemRID.SENTINEL_RECORD_DELETE](), {
@@ -140,6 +141,10 @@ export default {
 							expiry: 15 * 60,
 						}
 					);
+					break;
+				}
+				default: {
+					throw new SystemError();
 				}
 			}
 		} catch (error) {

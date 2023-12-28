@@ -1,5 +1,5 @@
 import { BanRequestStates, RecordActions, datastore } from "../../../services/datastore.js";
-import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../systems.js";
+import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../types.js";
 import autocomplete from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";

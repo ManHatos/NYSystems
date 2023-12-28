@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../systems.js";
+import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../types.js";
 import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
 import {
 	BanRequest,
@@ -13,7 +13,7 @@ import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
-import { command1CacheData } from "../manager.js";
+import { command1CacheData } from "../types.js";
 import { extractUserAutocompleteID } from "../../../helpers/utility.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 

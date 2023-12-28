@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionTypes, Interaction } from "@discordeno/bot";
-import { SystemAutocompleteElement, SystemAutocompleteIdentifiers } from "../../systems.js";
+import { SystemAutocompleteElement, SystemAutocompleteIdentifiers } from "../../types.js";
 import { roblox } from "../../../services/roblox.js";
 import { throttle } from "../../../helpers/utility.js";
 import { limitString } from "../../../helpers/utility.js";

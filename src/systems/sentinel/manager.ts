@@ -1,8 +1,4 @@
-import { BanRequest, RecordActions } from "../../services/datastore.js";
-import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
-import { SystemManager } from "../systems.js";
-import { Message } from "@discordeno/bot";
-import { Records } from "@prisma/client";
+import { SystemManager } from "../types.js";
 
 // importing and exporting all autocomplete files
 import autocomplete1 from "./autocomplete/user.js";
@@ -34,33 +30,3 @@ export const components: SystemManager["components"] = [
 import modal1 from "./modals/editReason.js";
 
 export const modals: SystemManager["modals"] = [modal1];
-
-// additional system typings
-export type command1CacheData = {
-	input: {
-		reason: string;
-		action: RecordActions | BanRequest;
-		warningCount: number;
-	};
-	roblox: {
-		user: UsersSingle;
-		avatar: UsersAvatar["imageUrl"];
-	};
-};
-
-export type component3CacheData = {
-	message: Message;
-	roblox: {
-		user: Records["input"]["user"];
-	};
-};
-
-export type component3CacheData2 = {
-	message: Message;
-};
-
-export const enum ManageRecordOptions {
-	"EDIT_REASON" = "EDIT_REASON",
-	"EDIT_ACTION" = "EDIT_ACTION",
-	"DELETE" = "DELETE",
-}

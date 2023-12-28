@@ -1,7 +1,7 @@
 import { ButtonStyles, MessageComponentTypes, MessageFlags } from "@discordeno/bot";
-import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../systems.js";
+import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
 import { cachestore } from "../../../services/cachestore.js";
-import { command1CacheData } from "../manager.js";
+import { command1CacheData } from "../types.js";
 import { discord } from "../../../services/discord.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";

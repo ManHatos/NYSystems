@@ -1,11 +1,11 @@
 import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
-import { SystemComponentElement, SystemComponentIdentifiers, SystemRID } from "../../systems.js";
+import { SystemComponentElement, SystemComponentIdentifiers, SystemRID } from "../../types.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
-import { component3CacheData } from "../manager.js";
+import { component3CacheData } from "../types.js";
 import { response } from "../responses.js";
 import { discord } from "../../../services/discord.js";
 

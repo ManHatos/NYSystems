@@ -7,7 +7,8 @@ import {
 	User,
 	avatarUrl,
 } from "@discordeno/bot";
-import { Embeds, SystemRID, SystemComponentElement, SystemResponse } from "../systems.js";
+import { SystemRID, SystemComponentElement, SystemResponse } from "../types.js";
+import { Embeds } from "../../helpers/utility.js";
 import component1 from "./components/confirmRecord.js";
 import component2 from "./components/confirmBanRequest.js";
 import component3 from "./components/editAction.js";

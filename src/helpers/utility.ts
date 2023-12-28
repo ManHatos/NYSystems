@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { cachestore } from "../services/cachestore.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "./errors.js";
+import { Camelize, DiscordEmbed } from "@discordeno/bot";
 
 /** pauses the process for the specified `delay` in milliseconds */
 export const wait = async (delay: number): Promise<void> => {
@@ -77,6 +78,30 @@ export const formatErrorMessage = (error: SystemError): string => {
 
 	return emoji + " **" + segments.shift() + "**" + (segments ? "\n" + segments.join("\n") : "");
 };
+
+/** construct a Discord embed using system-wide default configurations */
+export const Embeds = (
+	/** an array of discord camelized embed objects that will be converted into the default systems embed format */
+	embeds: Pick<
+		Embed,
+		"author" | "description" | "fields" | "footer" | "thumbnail" | "url" | "title"
+	>[],
+	/** override the default embed generator format */
+	override?: Pick<Embed, "color" | "image" | "timestamp">
+): Embed[] => {
+	return embeds.map((input) => {
+		let embed: Embed = input;
+		embed.color = override?.color ?? Number(process.env.SENTINEL_EMBED_COLOR_PRIMARY);
+		embed.image = override?.image ?? {
+			url: process.env.URI_EMBED_WIDTH_LIMITER,
+		};
+		embed.timestamp = override?.timestamp ?? new Date().toISOString();
+
+		return embed;
+	});
+};
+
+type Embed = Camelize<DiscordEmbed>;
 
 // unqiue values to validate stringify utilities
 const isBigInt = "_%T=BIGINT";
