@@ -94,7 +94,7 @@ export default {
 						}
 					);
 
-					modal1Values.reason = record.input.reason;
+					modal1Values.set(record.input.reason);
 					console.log(stringify(modal1.data));
 					await interaction.respond(modal1.data, {
 						isPrivate: true,

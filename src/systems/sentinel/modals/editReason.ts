@@ -14,6 +14,11 @@ export const values = {
 	reset() {
 		this.reason = "";
 	},
+	set(value: string) {
+		Object.assign(this, {
+			reason: value,
+		});
+	},
 	reason: "",
 };
 export default {
