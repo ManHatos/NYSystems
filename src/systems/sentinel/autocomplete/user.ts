@@ -6,7 +6,7 @@ import { limitString } from "../../../helpers/utility.js";
 import { UsersSingle } from "../../../services/roblox/users.js";
 import { ErrorCodes, SystemError } from "../../../helpers/errors.js";
 
-export const id = SystemAutocompleteIdentifiers.MODERATION_USER;
+export const id = SystemAutocompleteIdentifiers.SENTINEL_USER_SEARCH;
 export default {
 	id,
 	data: {

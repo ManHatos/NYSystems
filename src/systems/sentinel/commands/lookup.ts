@@ -1,9 +1,5 @@
 import { BanRequestStates, RecordActions, datastore } from "../../../services/datastore.js";
-import {
-	ResponseIdentifiers,
-	SystemCommandElement,
-	SystemCommandIdentifiers,
-} from "../../systems.js";
+import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../systems.js";
 import autocomplete from "../autocomplete/user.js";
 import { response } from "../responses.js";
 import { roblox } from "../../../services/roblox.js";
@@ -12,7 +8,7 @@ import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
 import { dateFromDays, extractUserAutocompleteID } from "../../../helpers/utility.js";
 import { SystemError } from "../../../helpers/errors.js";
 
-export const id = SystemCommandIdentifiers.MODERATION_HISTORY_VIEW;
+export const id = SystemCommandIdentifiers.SENTINEL_HISTORY_VIEW;
 export default {
 	id,
 	data: {
@@ -107,7 +103,7 @@ export default {
 			});
 
 			await interaction.edit(
-				response[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]({
+				response[SystemRID.SENTINEL_LOOKUP]({
 					author: interaction.user,
 					roblox: {
 						user: robloxUser,
@@ -125,6 +121,7 @@ export default {
 				})
 			);
 		} catch (error) {
+			if (!interaction.acknowledged) await interaction.respond("ERROR", { isPrivate: true });
 			if (error instanceof SystemError) {
 				console.log("systemError /lookup: ", error);
 				await interaction.edit({

@@ -1,9 +1,5 @@
 import { ButtonStyles, MessageComponentTypes, MessageFlags } from "@discordeno/bot";
-import {
-	ResponseIdentifiers,
-	SystemComponentElement,
-	SystemComponentIdentifiers,
-} from "../../systems.js";
+import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../systems.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { command1CacheData } from "../manager.js";
 import { discord } from "../../../services/discord.js";
@@ -11,7 +7,7 @@ import { RecordActions, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
 import { SystemError } from "../../../helpers/errors.js";
 
-export const id = SystemComponentIdentifiers.MODERATION_LOG_CONFIRM;
+export const id = SystemComponentIdentifiers.SENTINEL_LOG_CONFIRM;
 export default {
 	id,
 	data: {
@@ -29,6 +25,7 @@ export default {
 
 		try {
 			if (!interaction.message) return;
+
 			const cached = await (async () => {
 				const cacheKey = ["cache", interaction.user.id, interaction.message!.id].join("/");
 				const data = cachestore.get(cacheKey);
@@ -42,7 +39,7 @@ export default {
 			if (data.input.action == "Ban Request") return;
 
 			const recordMessage = await discord.rest.sendMessage(process.env.SENTINEL_CHANNEL_ID, {
-				...response[ResponseIdentifiers.MODERATION_RECORD_CREATE]({
+				...response[SystemRID.SENTINEL_RECORD]({
 					author: interaction.user,
 					input: {
 						reason: data.input.reason,
@@ -70,16 +67,15 @@ export default {
 				},
 			});
 
-			await interaction.edit(
-				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](this.data)
-			);
+			await interaction.edit(response[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE](this.data));
 			await discord.rest.sendFollowupMessage(interaction.token, {
-				...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
+				...response[SystemRID.SENTINEL_CREATE_SUCCESS](),
 				flags: MessageFlags.Ephemeral,
 			});
 		} catch (error) {
+			if (!interaction.acknowledged) await interaction.respond("ERROR", { isPrivate: true });
 			if (error instanceof SystemError) {
-				console.log("systemError [confirmLog]: ", error);
+				console.log("systemError [confirmRecord]: ", error);
 				await interaction.edit({
 					content: error.message,
 					flags: MessageFlags.SuppressEmbeds,
@@ -90,6 +86,7 @@ export default {
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,
+					components: [],
 				});
 			}
 		}

@@ -1,9 +1,5 @@
 import { ButtonStyles, MessageComponentTypes, MessageFlags } from "@discordeno/bot";
-import {
-	ResponseIdentifiers,
-	SystemComponentElement,
-	SystemComponentIdentifiers,
-} from "../../systems.js";
+import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../systems.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { command1CacheData } from "../manager.js";
 import { discord } from "../../../services/discord.js";
@@ -11,7 +7,7 @@ import { BanRequestStates, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 
-export const id = SystemComponentIdentifiers.MODERATION_BR_CONFIRM;
+export const id = SystemComponentIdentifiers.SENTINEL_BR_CONFIRM;
 export default {
 	id,
 	data: {
@@ -42,7 +38,7 @@ export default {
 			if (data.input.action != "Ban Request") return;
 
 			const requestMessage = await discord.rest.sendMessage(process.env.SENTINEL_BR_CHANNEL_ID, {
-				...response[ResponseIdentifiers.MODERATION_BAN_REQUEST]({
+				...response[SystemRID.SENTINEL_BAN_REQUEST]({
 					author: interaction.user,
 					input: {
 						reason: data.input.reason,
@@ -88,16 +84,15 @@ export default {
 				},
 			});
 
-			await interaction.edit(
-				response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](this.data)
-			);
+			await interaction.edit(response[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE](this.data));
 			await discord.rest.sendFollowupMessage(interaction.token, {
-				...response[ResponseIdentifiers.MODERATION_CREATED_SUCCESS](),
+				...response[SystemRID.SENTINEL_CREATE_SUCCESS](),
 				flags: MessageFlags.Ephemeral,
 			});
 		} catch (error) {
+			if (!interaction.acknowledged) await interaction.respond("ERROR", { isPrivate: true });
 			if (error instanceof SystemError) {
-				console.log("systemError [confirmLog]: ", error);
+				console.log("systemError [confirmBanRequest]: ", error);
 				await interaction.edit({
 					content: error.message,
 					flags: MessageFlags.SuppressEmbeds,

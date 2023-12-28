@@ -62,7 +62,7 @@ export const dateFromDays = (
 	return new Date(Date.now() - ms);
 };
 
-/** extract the user identifier (ID) from a `MODERATION_USER` autocomplete option */
+/** extract the user identifier (ID) from a `SENTINEL_USER_SEARCH` autocomplete option */
 export const extractUserAutocompleteID = (value: string): number => {
 	return value.startsWith(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX) || value.startsWith("#")
 		? Number(value.replace(process.env.SENTINEL_USER_AUTOCOMPLETE_PREFIX, "").replace("#", ""))

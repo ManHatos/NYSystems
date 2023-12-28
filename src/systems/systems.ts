@@ -6,8 +6,8 @@ import {
 	CreateMessageOptions,
 	CreateSlashApplicationCommand,
 	DiscordEmbed,
+	EditMessage,
 	ExecuteWebhook,
-	InputTextComponent,
 	Interaction,
 	InteractionCallbackData,
 	InteractionDataOption,
@@ -37,51 +37,73 @@ export const systems = {
 		if (system.autocomplete) this.autocomplete.data.push(...system.autocomplete);
 		if (system.components) this.components.data.push(...system.components);
 		if (system.commands) this.commands.data.push(...system.commands);
+		if (system.modals) this.modals.data.push(...system.modals);
 	},
 	autocomplete: systemDefaults("autocomplete"),
 	components: systemDefaults("components"),
 	commands: systemDefaults("commands"),
+	modals: systemDefaults("modals"),
 } as MainSystemManager;
 
-import * as moderation from "./sentinel/manager.js";
-systems.set(moderation);
+import * as sentinel from "./sentinel/manager.js";
+systems.set(sentinel);
 
 // modules typings
 
 export const enum SystemCommandIdentifiers {
-	/** command used to create new moderations for a Roblox user */
-	"MODERATION_CREATE_NEW" = "log",
-	/** command used to view moderation history and information for a Roblox user */
-	"MODERATION_HISTORY_VIEW" = "lookup",
+	/** command used to create new records for a Roblox user */
+	"SENTINEL_CREATE_NEW" = "log",
+	/** command used to view record history and information for a Roblox user */
+	"SENTINEL_HISTORY_VIEW" = "lookup",
 }
 
 export const enum SystemAutocompleteIdentifiers {
 	/** command option used to automatically retrieve Roblox users information based on input or on executer's user history */
-	"MODERATION_USER" = "user",
+	"SENTINEL_USER_SEARCH" = "user",
 }
 
 export const enum SystemComponentIdentifiers {
-	/** component used to confirm the creation of a moderation log */
-	"MODERATION_LOG_CONFIRM" = "confirmRecord",
+	/** component used to confirm the creation of a record */
+	"SENTINEL_LOG_CONFIRM" = "confirmRecord",
 	/** component used to confirm the creation of a ban request */
-	"MODERATION_BR_CONFIRM" = "confirmBR",
+	"SENTINEL_BR_CONFIRM" = "confirmBR",
+	/** component used to manage a record (e.g. edit, delete) */
+	"SENTINEL_RECORD_MANAGE" = "manageRecord",
+	/** component used to modify a record's action type */
+	"SENTINEL_RECORD_ACTION_EDIT" = "editRecordAction",
+	/** component used to confirm the deletion of a record */
+	"SENTINEL_RECORD_DELETE_CONFIRM" = "deleteRecordConfirm",
 }
 
-export const enum ResponseIdentifiers {
-	/** response sent prompting a confirmation after a `MODERATION_CREATE_NEW` interaction */
-	"MODERATION_CREATE_CONFIRM",
-	/** response sent prompting a confirmation after a `MODERATION_CREATE_NEW` interaction with an unauthorized role for bans */
-	"MODERATION_BR_CREATE_CONFIRM",
-	/** response sent following a `MODERATION_CREATE_NEW` interaction */
-	"MODERATION_CREATED_SUCCESS",
-	/** updated `MODERATION_CREATE_CONFIRM` response shown following a successful moderation record creation */
-	"MODERATION_CREATE_CONFIRM_UPDATE",
+export const enum SystemModalIdentifiers {
+	/** modal used to modify a record's reason */
+	"SENTINEL_EDIT_REASON" = "editRecordReason",
+}
+
+export const enum SystemRID {
+	// sentinel
+	/** response sent prompting a confirmation after a `SENTINEL_CREATE_NEW` interaction */
+	"SENTINEL_RECORD_CONFIRM",
+	/** response sent prompting a confirmation after a `SENTINEL_CREATE_NEW` interaction with an unauthorized role for bans */
+	"SENTINEL_BR_CONFIRM",
+	/** response sent following a `SENTINEL_CREATE_NEW` interaction */
+	"SENTINEL_CREATE_SUCCESS",
+	/** updated `SENTINEL_RECORD_CONFIRM` response shown following a successful record creation */
+	"SENTINEL_RECORD_CONFIRM_UPDATE",
 	/** a moderation record */
-	"MODERATION_RECORD_CREATE",
+	"SENTINEL_RECORD",
 	/** a moderation ban request */
-	"MODERATION_BAN_REQUEST",
-	/** response sent following a `MODERATION_HISTORY_VIEW` interaction */
-	"MODERATION_HISTORY_LOOKUP",
+	"SENTINEL_BAN_REQUEST",
+	/** response sent following a `SENTINEL_HISTORY_VIEW` interaction */
+	"SENTINEL_LOOKUP",
+	/** response sent following a `SENTINEL_RECORD_MANAGE` interaction with an `EDIT_ACTION` set choice */
+	"SENTINEL_EDIT_ACTION",
+	/** response sent following any successful sentinel record edit interaction */
+	"SENTINEL_RECORD_MANAGE_SUCCESS",
+	/** response sent following a `SENTINEL_RECORD_MANAGE` interaction with a `DELETE` set choice */
+	"SENTINEL_RECORD_DELETE",
+	/** response sent following a successful `SENTINEL_RECORD_DELETE` interaction */
+	"SENTINEL_RECORD_DELETE_SUCCESS",
 }
 
 export type SystemManager = {
@@ -111,6 +133,8 @@ export type SystemElements = {
 	components: SystemComponentElement;
 	/** command elements contain data for and handle all interactions referencing application commands such as slash commands */
 	commands: SystemCommandElement;
+	/** modal elements contain data for and handle all interactions referencing text input modals */
+	modals: SystemModalElement;
 };
 
 export type SystemCommandElement = {
@@ -142,7 +166,6 @@ export type SystemComponentElement = {
 	/** the data for the specific component (excluding all action rows) */
 	data:
 		| ButtonComponent
-		| InputTextComponent
 		| SelectMenuComponent
 		| SelectMenuChannelsComponent
 		| SelectMenuRolesComponent
@@ -152,15 +175,23 @@ export type SystemComponentElement = {
 	execute: (interaction: Interaction) => Promise<unknown | void>;
 };
 
-// export type SystemResponse<data extends Record<string, any> = {}> = (
-// 	id: ResponseIdentifiers,
-// 	data: Partial<data>
-// ) => InteractionCallbackData | ExecuteWebhook | CreateMessageOptions;
+export type SystemModalElement = {
+	/** the internal identifier for the module element */
+	id: SystemModalIdentifiers;
+	/** the data for the specific component (excluding all action rows) */
+	data: Pick<InteractionCallbackData, "components" | "customId" | "title">;
+	/** the handler for any interactions referencing this element */
+	execute: (interaction: Interaction) => Promise<unknown | void>;
+};
 
-export type SystemResponse<data extends Partial<Record<ResponseIdentifiers, any>>> = {
-	[key in keyof data]: (
-		data: data[key]
-	) => CreateMessageOptions | ExecuteWebhook | InteractionCallbackData;
+export type SystemResponse<
+	data extends Partial<Record<SystemRID, any>>,
+	returns extends Record<
+		keyof data,
+		CreateMessageOptions | ExecuteWebhook | InteractionCallbackData | EditMessage
+	>
+> = {
+	[key in keyof data]: (data: data[key]) => returns[key];
 };
 
 export function Embeds(

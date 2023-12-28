@@ -1,9 +1,5 @@
 import "dotenv/config";
-import {
-	ResponseIdentifiers,
-	SystemCommandElement,
-	SystemCommandIdentifiers,
-} from "../../systems.js";
+import { SystemRID, SystemCommandElement, SystemCommandIdentifiers } from "../../systems.js";
 import { ApplicationCommandOptionTypes, MessageFlags } from "@discordeno/bot";
 import {
 	BanRequest,
@@ -21,7 +17,7 @@ import { command1CacheData } from "../manager.js";
 import { extractUserAutocompleteID } from "../../../helpers/utility.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 
-export const id = SystemCommandIdentifiers.MODERATION_CREATE_NEW;
+export const id = SystemCommandIdentifiers.SENTINEL_CREATE_NEW;
 export default {
 	id,
 	data: {
@@ -32,7 +28,7 @@ export default {
 			{
 				type: ApplicationCommandOptionTypes.String,
 				name: "reason",
-				description: "The reason for the moderation",
+				description: "The reason behind taking the action",
 				required: true,
 				maxLength: 100,
 			},
@@ -117,7 +113,7 @@ export default {
 
 			if (
 				!interaction.member?.roles.find((role) =>
-					process.env.SENTINEL_BR_ROLES.split(",").includes(String(role))
+					process.env.SENTINEL_BR_ROLES.split(",")?.includes(String(role))
 				) &&
 				values[2] == RecordActions.Ban
 			) {
@@ -144,7 +140,7 @@ export default {
 					});
 
 				await interaction.edit(
-					response[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]({
+					response[SystemRID.SENTINEL_BR_CONFIRM]({
 						author: interaction.user,
 						history: userRecords,
 						input: {
@@ -159,7 +155,7 @@ export default {
 				);
 			} else if (values[2] != "Ban Request") {
 				await interaction.edit(
-					response[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]({
+					response[SystemRID.SENTINEL_RECORD_CONFIRM]({
 						author: interaction.user,
 						history: { records: userRecords, banRequests: banRequests[0] },
 						input: {
@@ -194,6 +190,7 @@ export default {
 				}
 			);
 		} catch (error) {
+			if (!interaction.acknowledged) await interaction.respond("ERROR", { isPrivate: true });
 			if (error instanceof SystemError) {
 				console.log("systemError /log: ", error);
 				await interaction.edit({
@@ -206,7 +203,6 @@ export default {
 				await interaction.edit({
 					content: new SystemError().message,
 					flags: MessageFlags.SuppressEmbeds,
-					components: [],
 				});
 			}
 		}

@@ -16,6 +16,10 @@ declare global {
 			EMOJI_ERROR_SYSTEM: string;
 			/** emoji sent with successful responses */
 			EMOJI_SUCCESS: string;
+			/** emoji sent to showcase a list of items */
+			EMOJI_LIST: string;
+			/** emoji sent to illustrate deletion or removal of a resource */
+			EMOJI_TRASH: string;
 
 			// roblox
 			/** the `.ROBLOSECURITY` cookie for the system's Roblox bot account */
@@ -56,8 +60,10 @@ declare global {
 			SENTINEL_EMBED_COLOR_PREVIEW: string;
 			/** prefix that is used to identify autocomplete choices in autocomplete options */
 			SENTINEL_USER_AUTOCOMPLETE_PREFIX: string;
-			/** roles identifiers allowed to submit ban records, separated by `,` */
+			/** role identifiers allowed to submit ban records, separated by `,` */
 			SENTINEL_BR_ROLES: string;
+			/** role identifiers allowed to manage all records, regardless of ownership, separated by `,` */
+			SENTINEL_SU_ROLES: string;
 		}
 	}
 }

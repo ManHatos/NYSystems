@@ -1,84 +1,113 @@
 import "dotenv/config";
-import { DiscordEmbedField, MessageComponentTypes, User, avatarUrl } from "@discordeno/bot";
-import { Embeds, ResponseIdentifiers, SystemComponentElement, SystemResponse } from "../systems.js";
+import {
+	CreateMessageOptions,
+	DiscordEmbedField,
+	InteractionCallbackData,
+	MessageComponentTypes,
+	User,
+	avatarUrl,
+} from "@discordeno/bot";
+import { Embeds, SystemRID, SystemComponentElement, SystemResponse } from "../systems.js";
 import component1 from "./components/confirmRecord.js";
 import component2 from "./components/confirmBanRequest.js";
+import component3 from "./components/editAction.js";
+import component4 from "./components/manageRecord.js";
+import component5 from "./components/confirmDelete.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
 import { BanRequest, BanRequestStates, RecordActions } from "../../services/datastore.js";
 import { BanRequests, Records } from "@prisma/client";
 import color from "chalk";
 
-export const response: SystemResponse<{
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM]: {
-		author: User;
-		roblox: {
-			user: UsersSingle;
-			avatar?: UsersAvatar["imageUrl"];
+export const response: SystemResponse<
+	{
+		[SystemRID.SENTINEL_RECORD_CONFIRM]: {
+			author: User;
+			roblox: {
+				user: UsersSingle;
+				avatar?: UsersAvatar["imageUrl"];
+			};
+			input: {
+				reason: string;
+				action: RecordActions;
+				warningCount: number;
+			};
+			history: {
+				records: Partial<Records[]>;
+				banRequests?: BanRequests;
+			};
 		};
-		input: {
-			reason: string;
-			action: RecordActions;
-			warningCount: number;
+		[SystemRID.SENTINEL_BR_CONFIRM]: {
+			author: User;
+			roblox: {
+				user: UsersSingle;
+				avatar?: UsersAvatar["imageUrl"];
+			};
+			input: {
+				reason: string;
+				state: BanRequestStates;
+			};
+			history: Partial<Records[]>;
 		};
-		history: {
-			records: Partial<Records[]>;
-			banRequests?: BanRequests;
+		[SystemRID.SENTINEL_CREATE_SUCCESS]: void;
+		[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE]: SystemComponentElement["data"];
+		[SystemRID.SENTINEL_RECORD]: {
+			author: User;
+			roblox: {
+				user: UsersSingle;
+				avatar?: UsersAvatar["imageUrl"];
+			};
+			input: {
+				reason: string;
+				action: RecordActions;
+				warningCount: number;
+			};
 		};
-	};
-	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM]: {
-		author: User;
-		roblox: {
-			user: UsersSingle;
-			avatar?: UsersAvatar["imageUrl"];
+		[SystemRID.SENTINEL_BAN_REQUEST]: {
+			author: User;
+			roblox: {
+				user: UsersSingle;
+				avatar?: UsersAvatar["imageUrl"];
+			};
+			input: {
+				reason: string;
+			};
 		};
-		input: {
-			reason: string;
-			state: BanRequestStates;
+		[SystemRID.SENTINEL_LOOKUP]: {
+			author: User;
+			roblox: {
+				user: UsersSingle;
+				avatar?: UsersAvatar["imageUrl"];
+			};
+			warnings: {
+				week: number;
+				month: number;
+				total: number;
+			};
+			history: {
+				records: Partial<Records[]>;
+				banRequests?: BanRequests;
+			};
 		};
-		history: Partial<Records[]>;
-	};
-	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]: void;
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE]: SystemComponentElement["data"];
-	[ResponseIdentifiers.MODERATION_RECORD_CREATE]: {
-		author: User;
-		roblox: {
-			user: UsersSingle;
-			avatar?: UsersAvatar["imageUrl"];
-		};
-		input: {
-			reason: string;
-			action: RecordActions;
-			warningCount: number;
-		};
-	};
-	[ResponseIdentifiers.MODERATION_BAN_REQUEST]: {
-		author: User;
-		roblox: {
-			user: UsersSingle;
-			avatar?: UsersAvatar["imageUrl"];
-		};
-		input: {
-			reason: string;
-		};
-	};
-	[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP]: {
-		author: User;
-		roblox: {
-			user: UsersSingle;
-			avatar?: UsersAvatar["imageUrl"];
-		};
-		warnings: {
-			week: number;
-			month: number;
-			total: number;
-		};
-		history: {
-			records: Partial<Records[]>;
-			banRequests?: BanRequests;
-		};
-	};
-}> = {
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM](data) {
+		[SystemRID.SENTINEL_EDIT_ACTION]: void;
+		[SystemRID.SENTINEL_RECORD_MANAGE_SUCCESS]: void;
+		[SystemRID.SENTINEL_RECORD_DELETE]: void;
+		[SystemRID.SENTINEL_RECORD_DELETE_SUCCESS]: void;
+	},
+	{
+		[SystemRID.SENTINEL_RECORD_CONFIRM]: InteractionCallbackData;
+		[SystemRID.SENTINEL_BR_CONFIRM]: InteractionCallbackData;
+		[SystemRID.SENTINEL_CREATE_SUCCESS]: InteractionCallbackData;
+		[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE]: InteractionCallbackData;
+		[SystemRID.SENTINEL_RECORD]: CreateMessageOptions;
+		[SystemRID.SENTINEL_BAN_REQUEST]: CreateMessageOptions;
+		[SystemRID.SENTINEL_LOOKUP]: InteractionCallbackData;
+		[SystemRID.SENTINEL_EDIT_ACTION]: InteractionCallbackData;
+		[SystemRID.SENTINEL_RECORD_MANAGE_SUCCESS]: InteractionCallbackData;
+		[SystemRID.SENTINEL_RECORD_DELETE]: InteractionCallbackData;
+		[SystemRID.SENTINEL_RECORD_DELETE_SUCCESS]: InteractionCallbackData;
+	}
+> = {
+	[SystemRID.SENTINEL_RECORD_CONFIRM](data) {
 		return {
 			embeds: Embeds(
 				[
@@ -128,7 +157,7 @@ export const response: SystemResponse<{
 			],
 		};
 	},
-	[ResponseIdentifiers.MODERATION_BR_CREATE_CONFIRM](data) {
+	[SystemRID.SENTINEL_BR_CONFIRM](data) {
 		return {
 			embeds: Embeds(
 				[
@@ -178,12 +207,12 @@ export const response: SystemResponse<{
 			],
 		};
 	},
-	[ResponseIdentifiers.MODERATION_CREATED_SUCCESS]() {
+	[SystemRID.SENTINEL_CREATE_SUCCESS]() {
 		return {
-			content: process.env.EMOJI_SUCCESS + " **Successfully submitted**",
+			content: process.env.EMOJI_SUCCESS + " **Successfully submitted.**",
 		};
 	},
-	[ResponseIdentifiers.MODERATION_CREATE_CONFIRM_UPDATE](data) {
+	[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE](data) {
 		return {
 			components: [
 				{
@@ -193,7 +222,7 @@ export const response: SystemResponse<{
 			],
 		};
 	},
-	[ResponseIdentifiers.MODERATION_RECORD_CREATE](data) {
+	[SystemRID.SENTINEL_RECORD](data) {
 		return {
 			embeds: Embeds(
 				[
@@ -235,11 +264,14 @@ export const response: SystemResponse<{
 				}
 			),
 			components: [
-				//  TODO: add component(s) to manage records
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [component4.data],
+				},
 			],
 		};
 	},
-	[ResponseIdentifiers.MODERATION_BAN_REQUEST](data) {
+	[SystemRID.SENTINEL_BAN_REQUEST](data) {
 		return {
 			embeds: Embeds(
 				[
@@ -280,7 +312,7 @@ export const response: SystemResponse<{
 			],
 		};
 	},
-	[ResponseIdentifiers.MODERATION_HISTORY_LOOKUP](data) {
+	[SystemRID.SENTINEL_LOOKUP](data) {
 		return {
 			embeds: Embeds([
 				{
@@ -325,6 +357,44 @@ export const response: SystemResponse<{
 					],
 				},
 			]),
+		};
+	},
+	[SystemRID.SENTINEL_EDIT_ACTION]() {
+		return {
+			content:
+				process.env.EMOJI_LIST +
+				" **Please select the updated action.**\nThis will be permanently assigned to the record.",
+			components: [
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [component3.data],
+				},
+			],
+		};
+	},
+	[SystemRID.SENTINEL_RECORD_MANAGE_SUCCESS]() {
+		return {
+			content: process.env.EMOJI_SUCCESS + " **Successfully modified.**",
+			components: [],
+		};
+	},
+	[SystemRID.SENTINEL_RECORD_DELETE]() {
+		return {
+			content:
+				process.env.EMOJI_TRASH +
+				" **Please confirm the permanent deletion of the record.**\nThe record can never be restored.",
+			components: [
+				{
+					type: MessageComponentTypes.ActionRow,
+					components: [component5.data],
+				},
+			],
+		};
+	},
+	[SystemRID.SENTINEL_RECORD_DELETE_SUCCESS]() {
+		return {
+			content: process.env.EMOJI_SUCCESS + " **Successfully deleted.**",
+			components: [],
 		};
 	},
 };

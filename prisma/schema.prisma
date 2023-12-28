@@ -24,7 +24,7 @@ type Editor {
   editedAt DateTime    @default(now())
 }
 
-// moderation records data
+// sentinel records data
 
 model Records {
   id        BigInt      @id @map("_id")
@@ -40,7 +40,7 @@ type RecordInput {
   action Int
 }
 
-// moderation ban requests data
+// sentinel ban requests data
 
 model BanRequests {
   id        BigInt      @id @map("_id")

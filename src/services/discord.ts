@@ -2,6 +2,7 @@ import "dotenv/config";
 import {
 	ApplicationCommandTypes,
 	InteractionTypes,
+	MessageComponentTypes,
 	createBot,
 	createGatewayManager,
 	createRestManager,
@@ -72,10 +73,24 @@ export const discord = createBot({
 					: log.error(`Unknown autocomplete option "${focusedOption?.name ?? "not found"}"`);
 			} else if (interaction.type == InteractionTypes.MessageComponent) {
 				// components handler
+				if (!interaction.data?.customId || !interaction.data.componentType) return;
+				if (interaction.data.componentType == MessageComponentTypes.Button) {
+					// buttons handler
+					systems.components.has(interaction.data.customId)
+						? systems.components.get(interaction.data.customId)?.execute(interaction)
+						: log.error(`Unknown button "${interaction.data.customId}"`);
+				} else if (interaction.data.componentType == MessageComponentTypes.ActionRow) {
+					// select menus handler
+					systems.components.has(interaction.data.customId)
+						? systems.components.get(interaction.data.customId)?.execute(interaction)
+						: log.error(`Unknown select menu "${interaction.data.customId}"`);
+				}
+			} else if (interaction.type == InteractionTypes.ModalSubmit) {
+				// modals handler
 				if (!interaction.data?.customId) return;
-				systems.components.has(interaction.data.customId)
-					? systems.components.get(interaction.data.customId)?.execute(interaction)
-					: log.error(`Unknown message component "${interaction.data.customId}"`);
+				systems.modals.has(interaction.data.customId)
+					? systems.modals.get(interaction.data.customId)?.execute(interaction)
+					: log.error(`Unknown modal "${interaction.data.customId}"`);
 			}
 		},
 	},
