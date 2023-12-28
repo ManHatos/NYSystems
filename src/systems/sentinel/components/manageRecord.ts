@@ -65,7 +65,7 @@ export default {
 				});
 
 			if (
-				interaction.user.id != record.author.id ||
+				interaction.user.id != record.author.id &&
 				!interaction.member?.roles?.find((role) =>
 					process.env.SENTINEL_SU_ROLES.split(",")?.includes(String(role))
 				)
