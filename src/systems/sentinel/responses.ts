@@ -11,7 +11,7 @@ import { SystemRID, SystemComponentElement, SystemResponse } from "../types.js";
 import { Embeds } from "../../helpers/utility.js";
 import component1 from "./components/confirmRecord.js";
 import component2 from "./components/confirmBanRequest.js";
-import component3 from "./components/editAction.js";
+import { get as getComponent3 } from "./components/editAction.js";
 import component4 from "./components/manageRecord.js";
 import component5 from "./components/confirmDelete.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
@@ -89,7 +89,9 @@ export const response: SystemResponse<
 				banRequests?: BanRequests;
 			};
 		};
-		[SystemRID.SENTINEL_EDIT_ACTION]: void;
+		[SystemRID.SENTINEL_EDIT_ACTION]: {
+			default: RecordActions;
+		};
 		[SystemRID.SENTINEL_RECORD_MANAGE_SUCCESS]: void;
 		[SystemRID.SENTINEL_RECORD_DELETE]: void;
 		[SystemRID.SENTINEL_RECORD_DELETE_SUCCESS]: void;
@@ -360,7 +362,7 @@ export const response: SystemResponse<
 			]),
 		};
 	},
-	[SystemRID.SENTINEL_EDIT_ACTION]() {
+	[SystemRID.SENTINEL_EDIT_ACTION](data) {
 		return {
 			content:
 				process.env.EMOJI_LIST +
@@ -368,7 +370,7 @@ export const response: SystemResponse<
 			components: [
 				{
 					type: MessageComponentTypes.ActionRow,
-					components: [component3.data],
+					components: [getComponent3(data.default)],
 				},
 			],
 		};

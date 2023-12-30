@@ -1,14 +1,12 @@
 import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
 import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
 import { ManageRecordOptions, component3CacheData, component3CacheData2 } from "../types.js";
-import modal1, { values as modal1Values } from "../modals/editReason.js";
-import { defaults as component1Default } from "./editAction.js";
+import modal1, { get as getModal1 } from "../modals/editReason.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
-import { stringify } from "../../../helpers/utility.js";
 
 export const id = SystemComponentIdentifiers.SENTINEL_RECORD_MANAGE;
 export default {
@@ -94,20 +92,18 @@ export default {
 						}
 					);
 
-					modal1Values.set(record.input.reason);
-					console.log(stringify(modal1.data));
-					await interaction.respond(modal1.data, {
+					await interaction.respond(getModal1(record.input.reason), {
 						isPrivate: true,
 					});
-					modal1Values.reset();
 					break;
 				}
 				case ManageRecordOptions.EDIT_ACTION: {
-					component1Default.action = record.input.action;
-					await interaction.respond(response[SystemRID.SENTINEL_EDIT_ACTION](), {
-						isPrivate: true,
-					});
-					component1Default.reset();
+					await interaction.respond(
+						response[SystemRID.SENTINEL_EDIT_ACTION]({ default: record.input.action }),
+						{
+							isPrivate: true,
+						}
+					);
 
 					const originalResponse = await discord.rest.getOriginalInteractionResponse(
 						interaction.token

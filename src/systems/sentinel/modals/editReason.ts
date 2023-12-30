@@ -10,18 +10,7 @@ import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
 
 export const id = SystemModalIdentifiers.SENTINEL_EDIT_REASON;
-export const values = {
-	reset() {
-		this.reason = "";
-	},
-	set(value: string) {
-		Object.assign(this, {
-			reason: value,
-		});
-	},
-	reason: "",
-};
-export default {
+const modal = {
 	id,
 	data: {
 		customId: id,
@@ -36,7 +25,7 @@ export default {
 						style: TextStyles.Short,
 						label: "Reason",
 						placeholder: "Enter the updated reason",
-						value: values.reason,
+						value: "",
 					},
 				],
 			},
@@ -166,3 +155,13 @@ export default {
 		}
 	},
 } as SystemModalElement;
+export default modal;
+
+export const get = (value: string): typeof modal.data => {
+	const cloned = { ...modal.data };
+	if (cloned.components && cloned.components[0] && cloned.components[0].components[0])
+		Object.assign(cloned, {
+			value,
+		});
+	return cloned;
+};

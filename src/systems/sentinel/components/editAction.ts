@@ -1,4 +1,4 @@
-import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
+import { MessageComponentTypes, MessageFlags, SelectOption } from "@discordeno/bot";
 import { SystemComponentElement, SystemComponentIdentifiers, SystemRID } from "../../types.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
@@ -10,25 +10,12 @@ import { response } from "../responses.js";
 import { discord } from "../../../services/discord.js";
 
 export const id = SystemComponentIdentifiers.SENTINEL_RECORD_ACTION_EDIT;
-export const defaults = {
-	reset() {
-		this.action = undefined;
-	},
-	action: undefined as RecordActions | undefined,
-};
-export default {
+const component = {
 	id,
 	data: {
 		customId: id,
 		type: MessageComponentTypes.SelectMenu,
-		options: Object.keys(RecordActions)
-			.filter((key) => isNaN(Number(key)))
-			.map((action) => ({
-				label: action,
-				value: String(RecordActions[action as keyof typeof RecordActions]),
-				default:
-					typeof defaults.action != "undefined" ? RecordActions[defaults.action] == action : false,
-			})),
+		options: options(),
 		placeholder: "Select Action",
 	},
 	async execute(interaction) {
@@ -157,3 +144,23 @@ export default {
 		}
 	},
 } as SystemComponentElement;
+export default component;
+
+export const get = (action: RecordActions): typeof component.data => {
+	const cloned = { ...component.data };
+	if (cloned)
+		Object.assign(cloned, {
+			options: options(action),
+		});
+	return cloned;
+};
+
+function options(defaults?: RecordActions): SelectOption[] {
+	return Object.keys(RecordActions)
+		.filter((key) => isNaN(Number(key)))
+		.map((action) => ({
+			label: action,
+			value: String(RecordActions[action as keyof typeof RecordActions]),
+			default: typeof defaults != "undefined" ? RecordActions[defaults] == action : false,
+		}));
+}
