@@ -26,12 +26,9 @@ export default {
 		try {
 			if (!interaction.message) return;
 
-			const data = (await cachestore.get(
-				["cache", interaction.user.id, interaction.message.id].join("/"),
-				{
-					delete: true,
-				}
-			)) as command1CacheData;
+			const data = (await cachestore.get(["cache", interaction.user.id, interaction.id].join("/"), {
+				delete: true,
+			})) as command1CacheData;
 
 			if (data.input.action == "Ban Request") return;
 

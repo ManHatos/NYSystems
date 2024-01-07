@@ -50,13 +50,13 @@ export const cachestore = {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const value = await (() => {
-					if (options?.expiry)
+					if (options?.delete) return redis.GETDEL(key).catch(handleError);
+					else if (options?.expiry)
 						return redis
 							.GETEX(key, {
 								EX: options.expiry,
 							})
 							.catch(handleError);
-					else if (options?.delete) return redis.GETDEL(key).catch(handleError);
 					else return redis.GET(key).catch(handleError);
 				})();
 
