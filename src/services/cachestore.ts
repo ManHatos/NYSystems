@@ -45,11 +45,11 @@ export const cachestore = {
 			}
 		});
 	},
-	/** retrieve a value using its saved key */
+	/** retrieve a value using its saved key, `delete` has priority over `expiry` */
 	get: async (key: string, options?: { expiry?: number; delete?: true }): Promise<any> => {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const value = await (() => {
+				const value = await (async () => {
 					if (options?.delete) return redis.GETDEL(key).catch(handleError);
 					else if (options?.expiry)
 						return redis

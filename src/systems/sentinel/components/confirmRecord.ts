@@ -26,9 +26,13 @@ export default {
 		try {
 			if (!interaction.message) return;
 
-			const data = (await cachestore.get(["cache", interaction.user.id, interaction.id].join("/"), {
-				delete: true,
-			})) as command1CacheData;
+			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
+			const data = (await cachestore.get(
+				["cache", interaction.user.id, originalResponse.id].join("/"),
+				{
+					delete: true,
+				}
+			)) as command1CacheData;
 
 			if (data.input.action == "Ban Request") return;
 
