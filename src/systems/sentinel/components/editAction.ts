@@ -115,7 +115,7 @@ const component = {
 					input: {
 						reason: currentRecord.input.reason,
 						action,
-						warningCount,
+						warningCount: warningCount + 1,
 					},
 					roblox: {
 						user: robloxUser,
