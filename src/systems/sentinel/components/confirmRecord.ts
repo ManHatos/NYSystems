@@ -26,9 +26,12 @@ export default {
 		try {
 			if (!interaction.message) return;
 
-			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
+			console.log(
+				"button confirmed cache key: ",
+				["cache", interaction.user.id, interaction.message.id].join("/")
+			); // DEL: troubleshooting only
 			const data = (await cachestore.get(
-				["cache", interaction.user.id, originalResponse.id].join("/"),
+				["cache", interaction.user.id, interaction.message.id].join("/"),
 				{
 					delete: true,
 				}

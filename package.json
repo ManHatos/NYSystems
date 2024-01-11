@@ -14,17 +14,17 @@
 		"start": "npm run build && node dist/"
 	},
 	"dependencies": {
-		"@discordeno/bot": "^19.0.0-next.7aed376",
-		"@prisma/client": "^5.6.0",
+		"@discordeno/bot": "^19.0.0-next.d81b28a",
+		"@prisma/client": "^5.8.0",
 		"chalk": "^5.3.0",
 		"dotenv": "^16.3.1",
 		"dotenv-vault": "^1.25.0",
-		"redis": "^4.6.10"
+		"redis": "^4.6.12"
 	},
 	"devDependencies": {
-		"@types/node": "^20.9.2",
-		"prisma": "^5.6.0",
+		"@types/node": "^20.11.0",
+		"prisma": "^5.8.0",
 		"rimraf": "^5.0.5",
-		"typescript": "^5.2.2"
+		"typescript": "^5.3.3"
 	}
 }

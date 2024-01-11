@@ -172,6 +172,11 @@ export default {
 			}
 
 			const originalResponse = await discord.rest.getOriginalInteractionResponse(interaction.token);
+			console.log(
+				"cacheStore /log key: ",
+				["cache", interaction.user.id, originalResponse.id].join("/")
+			); // DEL: troubleshooting only
+
 			await cachestore.set(
 				["cache", interaction.user.id, originalResponse.id].join("/"),
 				{
