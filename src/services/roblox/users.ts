@@ -151,7 +151,7 @@ export const users = {
 					})
 					.then(async (response) => {
 						const body = await response.json();
-						if (response.ok && !body?.UserSearchResults)
+						if (!response.ok || !body?.UserSearchResults)
 							throw new SystemError({
 								code: ErrorCodes.ROBLOX_USER_NOT_FOUND,
 								message: `The username \` ${query} \` was either not found or was filtered.`,

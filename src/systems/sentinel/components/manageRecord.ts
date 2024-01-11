@@ -17,7 +17,7 @@ export default {
 		options: [
 			{
 				label: "Reason",
-				description: "Modify the record's reason",
+				description: "Modify the reason for this record",
 				value: ManageRecordOptions.EDIT_REASON,
 				emoji: {
 					name: "editPencil",
@@ -26,7 +26,7 @@ export default {
 			},
 			{
 				label: "Action",
-				description: "Modify the records action",
+				description: "Modify the action for this record",
 				value: ManageRecordOptions.EDIT_ACTION,
 				emoji: {
 					name: "editPencil",

@@ -110,9 +110,12 @@ const stringifyIdentifier = "__%G=STRINGIFY";
 /** `JSON.stringify` with proper `BigInt` handling */
 export const stringify = (data: any): string | undefined => {
 	if (data !== undefined) {
-		return JSON.stringify(data, (_, value) => {
-			return typeof value === "bigint" ? { [isBigInt]: true, value: value.toString() } : value;
-		});
+		return (
+			stringifyIdentifier +
+			JSON.stringify(data, (_, value) => {
+				return typeof value === "bigint" ? { [isBigInt]: true, value: value.toString() } : value;
+			})
+		);
 	}
 };
 

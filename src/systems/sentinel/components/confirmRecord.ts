@@ -26,10 +26,6 @@ export default {
 		try {
 			if (!interaction.message) return;
 
-			console.log(
-				"button confirmed cache key: ",
-				["cache", interaction.user.id, interaction.message.id].join("/")
-			); // DEL: troubleshooting only
 			const data = (await cachestore.get(
 				["cache", interaction.user.id, interaction.message.id].join("/"),
 				{
