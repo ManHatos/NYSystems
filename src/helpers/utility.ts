@@ -136,6 +136,7 @@ export const unstringify = (data?: string) => {
 			});
 		return JSON.parse(data.replace(stringifyIdentifier, ""), (_, value) => {
 			return typeof value === "object" &&
+				value &&
 				Object.keys(value).every((key) => [isBigInt, "value"].includes(key)) &&
 				value[isBigInt] &&
 				typeof value.value == "string"
