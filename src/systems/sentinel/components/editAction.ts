@@ -74,7 +74,7 @@ const component = {
 					createdAt: "desc",
 				},
 			});
-			const warningCount = userRecords.filter(
+			let warningCount = userRecords.filter(
 				(record) => record.input.action == RecordActions.Warning
 			).length;
 
@@ -107,6 +107,14 @@ const component = {
 				},
 			});
 
+			if (currentRecord.input.action == RecordActions.Warning && action != RecordActions.Warning)
+				--warningCount;
+			else if (
+				currentRecord.input.action != RecordActions.Warning &&
+				action == RecordActions.Warning
+			)
+				++warningCount;
+
 			await discord.rest.editMessage(
 				process.env.SENTINEL_CHANNEL_ID,
 				currentRecord.id,
@@ -115,7 +123,7 @@ const component = {
 					input: {
 						reason: currentRecord.input.reason,
 						action,
-						warningCount: warningCount + 1,
+						warningCount,
 					},
 					roblox: {
 						user: robloxUser,
