@@ -37,7 +37,7 @@ export const GATEWAY = createGatewayManager({
 			log.info("Successfully resumed gateway connection");
 		},
 	},
-	intents: 0,
+	intents: 0, // TODO: gateway intents
 	connection: await REST.getSessionInfo(),
 });
 
@@ -89,8 +89,11 @@ export const discord = createBot({
 					].includes(interaction.data.componentType)
 				) {
 					// select menus handler
+					const choices = interaction.data.values;
+					if (!choices) return;
+
 					systems.components.has(interaction.data.customId)
-						? systems.components.get(interaction.data.customId)?.execute(interaction)
+						? systems.components.get(interaction.data.customId)?.execute(interaction, choices)
 						: log.error(`Unknown select menu "${interaction.data.customId}"`);
 				}
 			} else if (interaction.type == InteractionTypes.ModalSubmit) {

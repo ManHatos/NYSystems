@@ -1,67 +1,99 @@
-// Prisma schema file
+// latest as of 21/02/2024
+
+// by choice, datastore's design does not utilise prisma ORM-level relations with mongoDB
+// prisma sucks.
 
 datasource db {
-  provider = "mongodb"
-  url      = ""
+    provider = "mongodb"
+    url      = ""
 }
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
-// common object types
+// NEXUS
 
-type DiscordUser {
-  id BigInt
+// nexus is the system responsible for handling users and registration
+// data models used by nexus contain data for all users within the New York State Roleplay server
+
+// currently, a user may be of 2 possible types:
+//  - guest: a user that has been automatically created following any interaction with the system
+//  - registered: a user that has manually completed the registration flow
+// this is indicated by the `type` field
+
+// nexus user data
+
+type NexusRegistrationData {
+    type      Int
+    registrar Int?
 }
 
-type RobloxUser {
-  id BigInt
+type NexusLinkedData {
+    discord BigInt?
+    roblox  Int?
 }
 
-type Editor {
-  user     DiscordUser
-  editedAt DateTime    @default(now())
+type NexusNoteData {
+    message   String
+    createdAt DateTime @default(now())
 }
 
-// sentinel records data
+model User {
+    id           String                @id @default(auto()) @map("_id") @db.ObjectId
+    name         String
+    flags        Int[]                 @default([])
+    note         NexusNoteData?
+    registration NexusRegistrationData
+    linked       NexusLinkedData
+    createdAt    DateTime              @default(now())
 
-model Records {
-  id        BigInt      @id @map("_id")
-  author    DiscordUser
-  editors   Editor[]
-  input     RecordInput
-  createdAt DateTime    @default(now())
+    @@map("NexusUsers")
 }
 
-type RecordInput {
-  user   RobloxUser
-  reason String
-  action Int
+// SENTINEL
+
+// sentinel is the system responsible for user management and other moderation purposes
+// data models used by sentinel contain data relating to user moderation
+
+type SentinelEditData {
+    editor   String // a nexus user id
+    editedAt DateTime @default(now())
 }
 
-// sentinel ban requests data
+// sentinel record data
 
-model BanRequests {
-  id        BigInt      @id @map("_id")
-  author    DiscordUser
-  editors   Editor[]
-  input     BanInput
-  state     Int         @default(0)
-  createdAt DateTime    @default(now())
+type SentinelRecordInfoData {
+    user   String // a nexus user id
+    reason String
+    action Int
 }
 
-type BanInput {
-  user   RobloxUser
-  reason String
+model Record {
+    id        BigInt                 @id @map("_id")
+    type      Int                    @default(0) // a record type for future expansion
+    author    String // a nexus user id
+    edits     SentinelEditData[]
+    info      SentinelRecordInfoData
+    createdAt DateTime               @default(now())
+
+    @@map("SentinelRecords")
 }
 
-// user notes
-// merging to "Users" model with system NEXUS after development
+// sentinel ban request data
 
-// model Notes {
-//   user      RobloxUser @id @map("_id")
-//   message   String
-//   createdAt DateTime   @default(now())
-//   editedAt  DateTime?
-// }
+type SentinelBanRequestInfoData {
+    user   String // a nexus user id
+    reason String
+    state  Int    @default(0)
+}
+
+model BanRequest {
+    id        BigInt                     @id @map("_id")
+    author    String // a nexus user id
+    edits     SentinelEditData[]
+    info      SentinelBanRequestInfoData
+    createdAt DateTime                   @default(now())
+
+    @@map("SentinelBanRequests")
+}

@@ -1,7 +1,12 @@
-import { ButtonStyles, MessageComponentTypes, MessageFlags } from "@discordeno/bot";
+import {
+	ButtonComponent,
+	ButtonStyles,
+	MessageComponentTypes,
+	MessageFlags,
+} from "@discordeno/bot";
 import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
 import { cachestore } from "../../../services/cachestore.js";
-import { command1CacheData } from "../types.js";
+import { Command1CacheData } from "../types.js";
 import { discord } from "../../../services/discord.js";
 import { BanRequestStates, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
@@ -31,7 +36,7 @@ export default {
 				{
 					delete: true,
 				}
-			)) as command1CacheData;
+			)) as Command1CacheData;
 
 			if (data.input.action != "Ban Request") return;
 
@@ -46,16 +51,14 @@ export default {
 			});
 
 			if (
-				await datastore.banRequests.findFirst({
+				await datastore.banRequest.findFirst({
 					where: {
-						input: {
+						info: {
 							is: {
-								user: {
-									id: data.roblox.user.id,
-								},
+								user: "", // TODO: get user object prior to finding records
+								state: BanRequestStates.Pending,
 							},
 						},
-						state: BanRequestStates.Pending,
 					},
 				})
 			)
@@ -66,19 +69,15 @@ export default {
 					cause: "Ban request pending alread exists",
 				});
 
-			await datastore.banRequests.create({
+			await datastore.banRequest.create({
 				data: {
 					id: BigInt(requestMessage.id),
-					author: {
-						id: interaction.user.id,
-					},
-					input: {
-						user: {
-							id: data.roblox.user.id,
-						},
+					author: "", // TODO: get author user object prior to creating request
+					info: {
+						user: "", // TODO: get user object prior to creating request
 						reason: data.input.reason,
+						state: BanRequestStates.Pending,
 					},
-					state: BanRequestStates.Pending,
 				},
 			});
 
@@ -106,4 +105,4 @@ export default {
 			}
 		}
 	},
-} as SystemComponentElement;
+} as SystemComponentElement<ButtonComponent>;

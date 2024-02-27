@@ -27,4 +27,5 @@ jobs:
             git fetch --all
             git reset --hard origin/canary
             npm install
+            npm run p-sync
             pm2 restart 'NYCanary'

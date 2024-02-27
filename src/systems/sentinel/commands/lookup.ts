@@ -60,25 +60,22 @@ export default {
 				return requestAvatar();
 			})();
 
-			const userWarnings = await datastore.records.findMany({
+			const userWarnings = await datastore.record.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: robloxUser.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 							action: RecordActions.Warning,
 						},
 					},
 				},
 			});
-			const userRecords = await datastore.records.findMany({
+			// TODO: optimize datastore requests above and below
+			const userRecords = await datastore.record.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: robloxUser.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 						},
 					},
 					createdAt: {
@@ -89,16 +86,14 @@ export default {
 					createdAt: "desc",
 				},
 			});
-			const banRequests = await datastore.banRequests.findMany({
+			const banRequests = await datastore.banRequest.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: robloxUser.id,
-							},
+							user: "", // TODO: get user object prior to finding records
+							state: BanRequestStates.Pending,
 						},
 					},
-					state: BanRequestStates.Pending,
 				},
 			});
 

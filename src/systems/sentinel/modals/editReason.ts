@@ -2,7 +2,7 @@ import { MessageComponentTypes, MessageFlags, TextStyles } from "@discordeno/bot
 import { SystemRID, SystemModalElement, SystemModalIdentifiers } from "../../types.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { cachestore } from "../../../services/cachestore.js";
-import { component3CacheData } from "../types.js";
+import { Component3CacheData } from "../types.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { discord } from "../../../services/discord.js";
 import { response } from "../responses.js";
@@ -41,9 +41,9 @@ const modal = {
 				interaction.data.components.at(0)?.components?.at(0)?.value || "<unknown reason>";
 			const data = (await cachestore.get(["cache", interaction.user.id, "modal", id].join("/"), {
 				delete: true,
-			})) as component3CacheData;
+			})) as Component3CacheData;
 
-			const robloxUser = await roblox.users.single(Number(data.roblox.user.id));
+			const robloxUser = await roblox.users.single(Number(data.roblox.user)); // get user object prior to roblox request
 			const robloxAvatar = await (async () => {
 				async function requestAvatar(
 					retried?: boolean
@@ -71,13 +71,11 @@ const modal = {
 				return requestAvatar();
 			})();
 
-			const userRecords = await datastore.records.findMany({
+			const userRecords = await datastore.record.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: data.roblox.user.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 						},
 					},
 				},
@@ -86,7 +84,7 @@ const modal = {
 				},
 			});
 			const warningCount = userRecords.filter(
-				(record) => record.input.action == RecordActions.Warning
+				(record) => record.info.action == RecordActions.Warning
 			).length;
 
 			const currentRecord = userRecords.find((record) => record.id == data.message.id);
@@ -98,19 +96,17 @@ const modal = {
 					level: ErrorLevels.System,
 				});
 
-			await datastore.records.update({
+			await datastore.record.update({
 				where: {
 					id: currentRecord.id,
 				},
 				data: {
-					editors: {
+					edits: {
 						push: {
-							user: {
-								id: interaction.user.id,
-							},
+							editor: "", // TODO: get author user object prior to updating record
 						},
 					},
-					input: {
+					info: {
 						update: {
 							reason,
 						},
@@ -125,7 +121,7 @@ const modal = {
 					author: interaction.user,
 					input: {
 						reason,
-						action: currentRecord.input.action,
+						action: currentRecord.info.action,
 						warningCount,
 					},
 					roblox: {

@@ -13,7 +13,7 @@ import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { discord } from "../../../services/discord.js";
-import { command1CacheData } from "../types.js";
+import { Command1CacheData } from "../types.js";
 import { extractUserAutocompleteID } from "../../../helpers/utility.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 
@@ -82,13 +82,11 @@ export default {
 				return requestAvatar();
 			})();
 
-			const userRecords = await datastore.records.findMany({
+			const userRecords = await datastore.record.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: robloxUser.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 						},
 					},
 				},
@@ -97,15 +95,13 @@ export default {
 				},
 			});
 			const warningCount = userRecords.filter(
-				(record) => record.input.action == RecordActions.Warning
+				(record) => record.info.action == RecordActions.Warning
 			).length;
-			const banRequests = await datastore.banRequests.findMany({
+			const banRequests = await datastore.banRequest.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: robloxUser.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 						},
 					},
 				},
@@ -118,16 +114,14 @@ export default {
 				values[2] == RecordActions.Ban
 			) {
 				values[2] = "Ban Request";
-				const banRequests = await datastore.banRequests.findMany({
+				const banRequests = await datastore.banRequest.findMany({
 					where: {
-						input: {
+						info: {
 							is: {
-								user: {
-									id: robloxUser.id,
-								},
+								user: "", // TODO: get user object prior to finding records
+								state: BanRequestStates.Pending,
 							},
 						},
-						state: BanRequestStates.Pending,
 					},
 				});
 
@@ -184,7 +178,7 @@ export default {
 						user: robloxUser,
 						avatar: robloxAvatar,
 					},
-				} as command1CacheData,
+				} as Command1CacheData,
 				{
 					expiry: 15 * 60, // expire after interaction tokens are invalidated (15 minutes)
 				}

@@ -1,6 +1,6 @@
-import { MessageComponentTypes, MessageFlags } from "@discordeno/bot";
+import { MessageComponentTypes, MessageFlags, SelectMenuComponent } from "@discordeno/bot";
 import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
-import { ManageRecordOptions, component3CacheData, component3CacheData2 } from "../types.js";
+import { ManageRecordOptions, Component3CacheData, Component3CacheData2 } from "../types.js";
 import modal1, { get as getModal1 } from "../modals/editReason.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { datastore } from "../../../services/datastore.js";
@@ -45,11 +45,11 @@ export default {
 		],
 		placeholder: "Manage Record",
 	},
-	async execute(interaction) {
+	async execute(interaction, values: [ManageRecordOptions]) {
 		try {
-			if (!interaction.message || !interaction.data?.values) return;
+			if (!interaction.message) return;
 
-			const record = await datastore.records.findUnique({
+			const record = await datastore.record.findUnique({
 				where: {
 					id: interaction.message.id,
 				},
@@ -64,7 +64,8 @@ export default {
 				});
 
 			if (
-				interaction.user.id != record.author.id &&
+				// TODO: update comparison to check Nexus user object
+				interaction.user.id != 0n &&
 				!interaction.member?.roles?.find((role) =>
 					process.env.SENTINEL_SU_ROLES.split(",")?.includes(String(role))
 				)
@@ -77,29 +78,29 @@ export default {
 					level: ErrorLevels.User,
 				});
 
-			switch (interaction.data.values[0] as ManageRecordOptions) {
+			switch (values[0]) {
 				case ManageRecordOptions.EDIT_REASON: {
 					await cachestore.set(
 						["cache", interaction.user.id, "modal", modal1.id].join("/"),
 						{
 							message: interaction.message,
 							roblox: {
-								user: record.input.user,
+								user: record.info.user,
 							},
-						} as component3CacheData,
+						} as Component3CacheData,
 						{
 							expiry: 15 * 60,
 						}
 					);
 
-					await interaction.respond(getModal1(record.input.reason), {
+					await interaction.respond(getModal1(record.info.reason), {
 						isPrivate: true,
 					});
 					break;
 				}
 				case ManageRecordOptions.EDIT_ACTION: {
 					await interaction.respond(
-						response[SystemRID.SENTINEL_EDIT_ACTION]({ default: record.input.action }),
+						response[SystemRID.SENTINEL_EDIT_ACTION]({ default: record.info.action }),
 						{
 							isPrivate: true,
 						}
@@ -113,9 +114,9 @@ export default {
 						{
 							message: interaction.message,
 							roblox: {
-								user: record.input.user,
+								user: record.info.user, // TODO: update caching to support Nexus user objects
 							},
-						} as component3CacheData,
+						} as Component3CacheData,
 						{
 							expiry: 15 * 60,
 						}
@@ -134,7 +135,7 @@ export default {
 						["cache", interaction.user.id, originalResponse.id].join("/"),
 						{
 							message: interaction.message,
-						} as component3CacheData2,
+						} as Component3CacheData2,
 						{
 							expiry: 15 * 60,
 						}
@@ -164,4 +165,4 @@ export default {
 			}
 		}
 	},
-} as SystemComponentElement;
+} as SystemComponentElement<SelectMenuComponent>;

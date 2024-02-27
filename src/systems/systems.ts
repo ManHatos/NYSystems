@@ -30,3 +30,6 @@ export const systems = {
 
 import * as sentinel from "./sentinel/manager.js";
 systems.set(sentinel);
+
+import * as nexus from "./nexus/manager.js";
+systems.set(nexus);

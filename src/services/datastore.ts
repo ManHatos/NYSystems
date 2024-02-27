@@ -59,3 +59,13 @@ export enum BanRequestStates {
 	"Rejected" = 1,
 	"Approved" = 2,
 }
+
+export enum NexusRegistrationType {
+	"Guest" = 0,
+	"Registered" = 1,
+}
+
+export enum NexusRegistrars {
+	"Bloxlink" = 0,
+	"Nexus" = 1,
+}

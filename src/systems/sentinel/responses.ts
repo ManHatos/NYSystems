@@ -15,10 +15,15 @@ import { get as getComponent3 } from "./components/editAction.js";
 import component4 from "./components/manageRecord.js";
 import component5 from "./components/confirmDelete.js";
 import { UsersAvatar, UsersSingle } from "../../services/roblox/users.js";
-import { BanRequest, BanRequestStates, RecordActions } from "../../services/datastore.js";
-import { BanRequests, Records } from "@prisma/client";
+import {
+	BanRequest as BanRequestPlaceholder,
+	BanRequestStates,
+	RecordActions,
+} from "../../services/datastore.js";
+import { BanRequest, Record } from "@prisma/client";
 import color from "chalk";
 
+// TODO: remake responses to support new nexus user system
 export const response: SystemResponse<
 	{
 		[SystemRID.SENTINEL_RECORD_CONFIRM]: {
@@ -33,8 +38,8 @@ export const response: SystemResponse<
 				warningCount: number;
 			};
 			history: {
-				records: Partial<Records[]>;
-				banRequests?: BanRequests;
+				records: Partial<Record[]>;
+				banRequests?: BanRequest;
 			};
 		};
 		[SystemRID.SENTINEL_BR_CONFIRM]: {
@@ -47,7 +52,7 @@ export const response: SystemResponse<
 				reason: string;
 				state: BanRequestStates;
 			};
-			history: Partial<Records[]>;
+			history: Partial<Record[]>;
 		};
 		[SystemRID.SENTINEL_CREATE_SUCCESS]: void;
 		[SystemRID.SENTINEL_RECORD_CONFIRM_UPDATE]: SystemComponentElement["data"];
@@ -85,8 +90,8 @@ export const response: SystemResponse<
 				total: number;
 			};
 			history: {
-				records: Partial<Records[]>;
-				banRequests?: BanRequests;
+				records: Partial<Record[]>;
+				banRequests?: BanRequest;
 			};
 		};
 		[SystemRID.SENTINEL_EDIT_ACTION]: {
@@ -429,7 +434,7 @@ function formatRobloxUser(
 	);
 }
 
-function formatAction(type: RecordActions | BanRequest): string {
+function formatAction(type: RecordActions | BanRequestPlaceholder): string {
 	switch (type) {
 		case RecordActions.Ban: {
 			return color.red(RecordActions[type]);
@@ -461,7 +466,7 @@ function formatBanRequestState(state: BanRequestStates): string {
 }
 
 function formatHistory(
-	history: { records: Partial<Records[]>; banRequest?: BanRequests },
+	history: { records: Partial<Record[]>; banRequest?: BanRequest },
 	options: {
 		limit: number;
 	} = {
@@ -489,13 +494,13 @@ function formatHistory(
 				"**Created <t:" +
 				(+new Date(history.banRequest.createdAt) / 1000).toFixed(0) +
 				":R>**\nby <@" +
-				history.banRequest.author.id +
+				history.banRequest.author + // TODO: retrieve user object
 				">\n```ansi\n" +
 				color.white("Reason  ") +
-				color.black(history.banRequest.input.reason) +
+				color.black(history.banRequest.info.reason) +
 				"\n``````ansi\n" +
 				color.white("Status  ") +
-				formatBanRequestState(history.banRequest.state) +
+				formatBanRequestState(history.banRequest.info.state) +
 				"\n```",
 		});
 
@@ -518,13 +523,13 @@ function formatHistory(
 				"**Created <t:" +
 				(+new Date(record.createdAt) / 1000).toFixed(0) +
 				":R>**\nby <@" +
-				record.author.id +
+				record.author + // TODO: retrieve user object
 				">\n```ansi\n" +
 				color.white("Reason  ") +
-				color.black(record.input.reason) +
+				color.black(record.info.reason) +
 				"\n``````ansi\n" +
 				color.white("Action  ") +
-				formatAction(record.input.action) +
+				formatAction(record.info.action) +
 				"\n```",
 		});
 		if (index + 1 < array.length)

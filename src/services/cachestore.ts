@@ -64,7 +64,8 @@ export const cachestore = {
 					resolve(validateStringify(value) ? unstringify(value) : value);
 				else
 					throw new SystemError({
-						...defaultError(),
+						code: ErrorCodes.CACHESTORE_INVALID_RESPONSE,
+						message: defaultError().message,
 						level: ErrorLevels.System,
 						cause: "Cache returned unknown value type",
 					});

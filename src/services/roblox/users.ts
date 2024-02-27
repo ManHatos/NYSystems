@@ -369,23 +369,23 @@ function defaultMessage(): Pick<SystemError, "message"> {
 
 // typings
 
-export type UsersSingle = {
-	description: string;
-	created: string;
-	isBanned: boolean;
-	externalAppDisplayName: string | null;
-	hasVerifiedBadge: boolean;
+export type RobloxUser = {
 	id: number;
 	name: string;
 	displayName: string;
 };
 
-export type UsersMulti = {
+export type UsersSingle = RobloxUser & {
+	description: string;
+	created: string;
+	isBanned: boolean;
+	externalAppDisplayName?: string;
+	hasVerifiedBadge: boolean;
+};
+
+export type UsersMulti = RobloxUser & {
 	requestedUsername: string;
 	hasVerifiedBadge: boolean;
-	id: number;
-	name: string;
-	displayName: string;
 };
 
 export const enum UsersAvatarStates {
@@ -409,10 +409,7 @@ export type UsersAvatar = {
 	version: string;
 };
 
-export type UsersSearch = {
-	id: number;
-	name: string;
-	displayName: string;
+export type UsersSearch = RobloxUser & {
 	description?: string;
 	online: boolean;
 	profilePath: string;

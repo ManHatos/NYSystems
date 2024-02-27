@@ -1,9 +1,14 @@
-import { MessageComponentTypes, ButtonStyles, MessageFlags } from "@discordeno/bot";
+import {
+	MessageComponentTypes,
+	ButtonStyles,
+	MessageFlags,
+	ButtonComponent,
+} from "@discordeno/bot";
 import { SystemComponentElement, SystemComponentIdentifiers, SystemRID } from "../../types.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { datastore } from "../../../services/datastore.js";
 import { cachestore } from "../../../services/cachestore.js";
-import { component3CacheData2 } from "../types.js";
+import { Component3CacheData2 } from "../types.js";
 import { response } from "../responses.js";
 import { discord } from "../../../services/discord.js";
 
@@ -31,9 +36,9 @@ export default {
 				{
 					delete: true,
 				}
-			)) as component3CacheData2;
+			)) as Component3CacheData2;
 
-			const record = await datastore.records.findUnique({
+			const record = await datastore.record.findUnique({
 				where: {
 					id: data.message.id,
 				},
@@ -47,7 +52,7 @@ export default {
 					level: ErrorLevels.System,
 				});
 
-			await datastore.records.delete({
+			await datastore.record.delete({
 				where: {
 					id: data.message.id,
 				},
@@ -78,4 +83,4 @@ export default {
 			}
 		}
 	},
-} as SystemComponentElement;
+} as SystemComponentElement<ButtonComponent>;

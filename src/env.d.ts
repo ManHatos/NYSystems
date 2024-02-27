@@ -25,6 +25,10 @@ declare global {
 			/** the `.ROBLOSECURITY` cookie for the system's Roblox bot account */
 			ROBLOX_TOKEN: string;
 
+			// bloxlink
+			/** the API key bound to the primary guild, `DISCORD_GUILD` should be the primary guild's identifier */
+			BLOXLINK_KEY: string;
+
 			// database
 			/** the full URL for the connection to the mongoDB database */
 			DATABASE_URL: string;

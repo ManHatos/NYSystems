@@ -1,10 +1,10 @@
 import { Message } from "@discordeno/bot";
-import { Records } from "@prisma/client";
+import { Record } from "@prisma/client";
 import { RecordActions, BanRequest } from "../../services/datastore.js";
 import { UsersSingle, UsersAvatar } from "../../services/roblox/users.js";
 
 // additional system typings
-export type command1CacheData = {
+export type Command1CacheData = {
 	input: {
 		reason: string;
 		action: RecordActions | BanRequest;
@@ -16,14 +16,14 @@ export type command1CacheData = {
 	};
 };
 
-export type component3CacheData = {
+export type Component3CacheData = {
 	message: Message;
 	roblox: {
-		user: Records["input"]["user"];
+		user: Record["info"]["user"];
 	};
 };
 
-export type component3CacheData2 = {
+export type Component3CacheData2 = {
 	message: Message;
 };
 

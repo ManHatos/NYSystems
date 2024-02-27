@@ -30,16 +30,30 @@ export const enum SystemAutocompleteIdentifiers {
 }
 
 export const enum SystemComponentIdentifiers {
+	// sentinel
 	/** component used to confirm the creation of a record */
-	"SENTINEL_LOG_CONFIRM" = "confirmRecord",
+	"SENTINEL_LOG_CONFIRM" = "SENTINEL_LOG_CONFIRM",
 	/** component used to confirm the creation of a ban request */
-	"SENTINEL_BR_CONFIRM" = "confirmBR",
+	"SENTINEL_BR_CONFIRM" = "SENTINEL_BR_CONFIRM",
 	/** component used to manage a record (e.g. edit, delete) */
-	"SENTINEL_RECORD_MANAGE" = "manageRecord",
+	"SENTINEL_RECORD_MANAGE" = "SENTINEL_RECORD_MANAGE",
 	/** component used to modify a record's action type */
-	"SENTINEL_RECORD_ACTION_EDIT" = "editRecordAction",
+	"SENTINEL_RECORD_ACTION_EDIT" = "SENTINEL_RECORD_ACTION_EDIT",
 	/** component used to confirm the deletion of a record */
-	"SENTINEL_RECORD_DELETE_CONFIRM" = "deleteRecordConfirm",
+	"SENTINEL_RECORD_DELETE_CONFIRM" = "SENTINEL_RECORD_DELETE_CONFIRM",
+
+	// nexus
+	/** component used to start the registration process */
+	"NEXUS_START" = "NEXUS_START",
+	/** component used to select the method of registration (registrar) */
+	"NEXUS_REGISTRAR_SELECT" = "NEXUS_REGISTRAR_SELECT",
+	/** component used to confirm registration data */
+	"NEXUS_REGISTRATION_CONFIRM" = "NEXUS_REGISTRATION_CONFIRM",
+	/** component used to change registration data */
+	"NEXUS_REGISTRATION_INCORRECT" = "NEXUS_REGISTRATION_INCORRECT",
+
+	/** component used to select an optional custom name during onboarding */
+	"NEXUS_SELECT_NAME" = "NEXUS_SELECT_NAME",
 }
 
 export const enum SystemModalIdentifiers {
@@ -127,19 +141,21 @@ export type SystemAutocompleteElement = {
 	execute: (interaction: Interaction, option: InteractionDataOption) => Promise<unknown | void>;
 };
 
-export type SystemComponentElement = {
-	/** the internal identifier for the module element */
-	id: SystemComponentIdentifiers;
-	/** the data for the specific component (excluding all action rows) */
-	data:
+export type SystemComponentElement<
+	type =
 		| ButtonComponent
 		| SelectMenuComponent
 		| SelectMenuChannelsComponent
 		| SelectMenuRolesComponent
 		| SelectMenuUsersComponent
-		| SelectMenuUsersAndRolesComponent;
+		| SelectMenuUsersAndRolesComponent
+> = {
+	/** the internal identifier for the module element */
+	id: SystemComponentIdentifiers;
+	/** the data for the specific component (excluding all action rows) */
+	data: type;
 	/** the handler for any interactions referencing this element */
-	execute: (interaction: Interaction) => Promise<unknown | void>;
+	execute: (interaction: Interaction, data?: string[]) => Promise<unknown | void>;
 };
 
 export type SystemModalElement = {

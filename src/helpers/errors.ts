@@ -30,7 +30,7 @@ export class SystemError {
 		this.code = error.code;
 		this.message = error.message;
 		this.level = error.level || ErrorLevels.System;
-		this.cause = error.cause || "Unknown cause";
+		this.cause = error.cause || "Undefined cause";
 
 		this.message = formatErrorMessage(this);
 	}
@@ -45,8 +45,21 @@ export const enum ErrorCodes {
 	"UNAUTHORIZED",
 	"INVALID",
 
+	// nexus
+	"NEXUS_USER_REGISTERED",
+	"NEXUS_USER_NOT_FOUND",
+	"NEXUS_",
+
 	// cachestore
 	"CACHESTORE_UNKNOWN",
+	"CACHESTORE_INVALID_RESPONSE",
+
+	// bloxlink service
+	"BLOXLINK_",
+	"BLOXLINK_NOT_FOUND",
+	"BLOXLINK_EXTERNAL_ERROR",
+	"BLOXLINK_RATELIMIT",
+	"BLOXLINK_UNKNOWN",
 
 	// roblox user service
 	"ROBLOX_USER_UNKNOWN",

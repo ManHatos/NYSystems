@@ -1,6 +1,6 @@
 {
 	"name": "ny-systems",
-	"version": "0.0.0-canary.3.0.10",
+	"version": "1.0.0-canary.0.0",
 	"author": "ManHat",
 	"type": "module",
 	"main": "index.js",
@@ -15,15 +15,15 @@
 	},
 	"dependencies": {
 		"@discordeno/bot": "^19.0.0-next.d81b28a",
-		"@prisma/client": "^5.8.0",
+		"@prisma/client": "^5.10.2",
 		"chalk": "^5.3.0",
-		"dotenv": "^16.3.1",
-		"dotenv-vault": "^1.25.0",
-		"redis": "^4.6.12"
+		"dotenv": "^16.4.5",
+		"dotenv-vault": "^1.26.0",
+		"redis": "^4.6.13"
 	},
 	"devDependencies": {
-		"@types/node": "^20.11.0",
-		"prisma": "^5.8.0",
+		"@types/node": "^20.11.20",
+		"prisma": "^5.10.2",
 		"rimraf": "^5.0.5",
 		"typescript": "^5.3.3"
 	}

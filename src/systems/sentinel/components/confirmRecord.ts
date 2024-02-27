@@ -1,7 +1,12 @@
-import { ButtonStyles, MessageComponentTypes, MessageFlags } from "@discordeno/bot";
+import {
+	ButtonComponent,
+	ButtonStyles,
+	MessageComponentTypes,
+	MessageFlags,
+} from "@discordeno/bot";
 import { SystemRID, SystemComponentElement, SystemComponentIdentifiers } from "../../types.js";
 import { cachestore } from "../../../services/cachestore.js";
-import { command1CacheData } from "../types.js";
+import { Command1CacheData } from "../types.js";
 import { discord } from "../../../services/discord.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { response } from "../responses.js";
@@ -31,7 +36,7 @@ export default {
 				{
 					delete: true,
 				}
-			)) as command1CacheData;
+			)) as Command1CacheData;
 
 			if (data.input.action == "Ban Request") return;
 
@@ -48,16 +53,12 @@ export default {
 				}),
 			});
 
-			await datastore.records.create({
+			await datastore.record.create({
 				data: {
 					id: BigInt(recordMessage.id),
-					author: {
-						id: interaction.user.id,
-					},
-					input: {
-						user: {
-							id: data.roblox.user.id,
-						},
+					author: "", // TODO: get author user object prior to creating record
+					info: {
+						user: "", // TODO: get user object prior to creating record
 						reason: data.input.reason,
 						action: data.input.action,
 					},
@@ -88,4 +89,4 @@ export default {
 			}
 		}
 	},
-} as SystemComponentElement;
+} as SystemComponentElement<ButtonComponent>;

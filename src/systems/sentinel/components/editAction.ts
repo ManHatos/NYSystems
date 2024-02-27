@@ -1,11 +1,16 @@
-import { MessageComponentTypes, MessageFlags, SelectOption } from "@discordeno/bot";
+import {
+	MessageComponentTypes,
+	MessageFlags,
+	SelectMenuComponent,
+	SelectOption,
+} from "@discordeno/bot";
 import { SystemComponentElement, SystemComponentIdentifiers, SystemRID } from "../../types.js";
 import { RecordActions, datastore } from "../../../services/datastore.js";
 import { ErrorCodes, ErrorLevels, SystemError } from "../../../helpers/errors.js";
 import { cachestore } from "../../../services/cachestore.js";
 import { roblox } from "../../../services/roblox.js";
 import { UsersAvatar, UsersAvatarStates } from "../../../services/roblox/users.js";
-import { component3CacheData } from "../types.js";
+import { Component3CacheData } from "../types.js";
 import { response } from "../responses.js";
 import { discord } from "../../../services/discord.js";
 
@@ -30,9 +35,9 @@ const component = {
 				{
 					delete: true,
 				}
-			)) as component3CacheData;
+			)) as Component3CacheData;
 
-			const robloxUser = await roblox.users.single(Number(data.roblox.user.id));
+			const robloxUser = await roblox.users.single(Number(data.roblox.user)); // get user object prior to roblox request
 			const robloxAvatar = await (async () => {
 				async function requestAvatar(
 					retried?: boolean
@@ -60,13 +65,11 @@ const component = {
 				return requestAvatar();
 			})();
 
-			const userRecords = await datastore.records.findMany({
+			const userRecords = await datastore.record.findMany({
 				where: {
-					input: {
+					info: {
 						is: {
-							user: {
-								id: data.roblox.user.id,
-							},
+							user: "", // TODO: get user object prior to finding records
 						},
 					},
 				},
@@ -75,7 +78,7 @@ const component = {
 				},
 			});
 			let warningCount = userRecords.filter(
-				(record) => record.input.action == RecordActions.Warning
+				(record) => record.info.action == RecordActions.Warning
 			).length;
 
 			const currentRecord = userRecords.find((record) => record.id == data.message.id);
@@ -87,19 +90,17 @@ const component = {
 					level: ErrorLevels.System,
 				});
 
-			await datastore.records.update({
+			await datastore.record.update({
 				where: {
 					id: currentRecord.id,
 				},
 				data: {
-					editors: {
+					edits: {
 						push: {
-							user: {
-								id: interaction.user.id,
-							},
+							editor: "", // TODO: get author user object prior to updating record
 						},
 					},
-					input: {
+					info: {
 						update: {
 							action,
 						},
@@ -107,10 +108,10 @@ const component = {
 				},
 			});
 
-			if (currentRecord.input.action == RecordActions.Warning && action != RecordActions.Warning)
+			if (currentRecord.info.action == RecordActions.Warning && action != RecordActions.Warning)
 				--warningCount;
 			else if (
-				currentRecord.input.action != RecordActions.Warning &&
+				currentRecord.info.action != RecordActions.Warning &&
 				action == RecordActions.Warning
 			)
 				++warningCount;
@@ -121,7 +122,7 @@ const component = {
 				response[SystemRID.SENTINEL_RECORD]({
 					author: interaction.user,
 					input: {
-						reason: currentRecord.input.reason,
+						reason: currentRecord.info.reason,
 						action,
 						warningCount,
 					},
@@ -151,7 +152,7 @@ const component = {
 			}
 		}
 	},
-} as SystemComponentElement;
+} as SystemComponentElement<SelectMenuComponent>;
 export default component;
 
 export const get = (action: RecordActions): typeof component.data => {
