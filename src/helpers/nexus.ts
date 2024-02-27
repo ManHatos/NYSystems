@@ -27,6 +27,10 @@ export const nexus = {
 					const existingAccount = await this.find({
 						discord: linked.discord,
 						roblox: linked.roblox,
+					}).catch((error) => {
+						if (error instanceof SystemError && error.code == ErrorCodes.NEXUS_USER_NOT_FOUND)
+							return;
+						else throw error;
 					});
 
 					let userAccount = {} as User;
