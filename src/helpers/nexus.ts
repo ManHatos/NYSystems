@@ -24,32 +24,16 @@ export const nexus = {
 		): Promise<User> {
 			return new Promise(async (resolve, reject) => {
 				try {
-					const existingAccount = await datastore.user.findFirst({
-						where: {
-							OR: [
-								{
-									linked: {
-										is: {
-											roblox: linked.roblox,
-										},
-									},
-								},
-								{
-									linked: {
-										is: {
-											discord: linked.discord,
-										},
-									},
-								},
-							],
-						},
+					const existingAccount = await this.find({
+						discord: linked.discord,
+						roblox: linked.roblox,
 					});
 
 					let userAccount = {} as User;
 					if (existingAccount?.registration.type == NexusRegistrationType.Registered)
 						throw new SystemError({
 							code: ErrorCodes.NEXUS_USER_REGISTERED,
-							message: `This user is already registered with Nexus.\<@${existingAccount.linked.discord}> is linked to (\`#${existingAccount.linked.roblox}\`)[https://roblox.com/users/${existingAccount.linked.roblox}/profile]\nContact support for help.`,
+							message: `This user is already registered with Nexus.\n<@${existingAccount.linked.discord}> is linked to \`(#${existingAccount.linked.roblox})[https://roblox.com/users/${existingAccount.linked.roblox}/profile]\`\nContact support for help.`,
 							level: ErrorLevels.User,
 							cause: "User already exists with registered account: " + existingAccount.id,
 						});
