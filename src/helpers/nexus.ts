@@ -94,7 +94,7 @@ export const nexus = {
 						where: {
 							OR: [
 								{
-									id: query.id ?? "",
+									id: query.id ?? "000000000000000000000000",
 								},
 								{
 									linked: {
