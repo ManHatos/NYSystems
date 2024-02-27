@@ -13,7 +13,7 @@ const component = {
 		options: [
 			{
 				label: "@username",
-				description: "Your Roblox Username (default)",
+				description: "Your Roblox username (default)",
 				value: NexusNameOptions.RobloxName,
 				// emoji: {
 				//  TODO: add emoji
@@ -22,7 +22,7 @@ const component = {
 			},
 			{
 				label: "displayName",
-				description: "Your Roblox Display Name",
+				description: "Your Roblox display name",
 				value: NexusNameOptions.RobloxDisplay,
 				// emoji: {
 				//  TODO: add emoji
@@ -75,8 +75,8 @@ const component = {
 export default component;
 
 export const get = (user: Pick<UsersSingle, "name" | "displayName">): typeof component.data => {
-	const cloned = { ...component.data } as SelectMenuComponent;
-	cloned.options.map((option) => {
+	const cloned = { ...component.data };
+	cloned.options = cloned.options.map((option) => {
 		switch (option.value as NexusNameOptions) {
 			case NexusNameOptions.RobloxName: {
 				return {
